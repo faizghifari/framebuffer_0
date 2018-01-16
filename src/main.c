@@ -52,13 +52,15 @@ int main() {
             for (y = 0; y < var_screen_info.yres; y++)
                 put_pixel_color(backbuff, x, y, 0x0, 0, 0x0, &var_screen_info, &fix_screen_info);
         
-        for (x = var_screen_info.xres/8*3; x < var_screen_info.xres/8*5; x++)
-            put_pixel_color(backbuff, x, cur_y, 0xff, 0xff, 0xff, &var_screen_info, &fix_screen_info);
-        put_image_color("data/a.txt", backbuff, 10, 10, 0xff, 0xff, 0xff, &var_screen_info, &fix_screen_info);
+        // for (x = var_screen_info.xres/8*3; x < var_screen_info.xres/8*5; x++)
+        //     put_pixel_color(backbuff, x, cur_y, 0xff, 0xff, 0xff, &var_screen_info, &fix_screen_info);
+
+        put_image_color("data/a.txt", backbuff, 10, cur_y, 0xff, 0xff, 0xff, &var_screen_info, &fix_screen_info);
+        put_image_color("data/b.txt", backbuff, 30, cur_y, 0xff, 0xff, 0xff, &var_screen_info, &fix_screen_info);
         
         memcpy(fbp, backbuff, var_screen_info.yres_virtual * fix_screen_info.line_length);
 
-        cur_y = (cur_y + 1) % var_screen_info.yres;
+        cur_y = (cur_y + 1) % (var_screen_info.yres - 20);
         usleep(1000);
     }
 

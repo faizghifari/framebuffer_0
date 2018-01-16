@@ -8,6 +8,8 @@
 #include <unistd.h>
 #include <string.h>
 
+const char* title_text = "Hello World";
+
 uint32_t pixel_color(uint8_t r, uint8_t g, uint8_t b, struct fb_var_screeninfo *vinfo);
 void put_pixel_color(uint8_t* mem, int x, int y, uint8_t r, uint8_t g, uint8_t b, struct fb_var_screeninfo *vinfo, struct fb_fix_screeninfo *finfo);
 void put_image_color(char* file, uint8_t* mem, int x, int y, uint8_t r, uint8_t g, uint8_t b, struct fb_var_screeninfo *vinfo, struct fb_fix_screeninfo *finfo);
@@ -55,13 +57,18 @@ int main() {
         // for (x = var_screen_info.xres/8*3; x < var_screen_info.xres/8*5; x++)
         //     put_pixel_color(backbuff, x, cur_y, 0xff, 0xff, 0xff, &var_screen_info, &fix_screen_info);
 
-        put_image_color("data/a.txt", backbuff, 10, cur_y, 0xff, 0xff, 0xff, &var_screen_info, &fix_screen_info);
-        put_image_color("data/b.txt", backbuff, 30, cur_y, 0xff, 0xff, 0xff, &var_screen_info, &fix_screen_info);
+        int i;
+        for (i = 0; i < strlen(title_text); i++) {
+            char* filename = (char*) malloc(256);
+            sprintf(filename, "data/%c.txt", title_text[i]);
+            put_image_color(filename, backbuff, 10+22*i, cur_y, 0xff, 0xff, 0xff, &var_screen_info, &fix_screen_info);
+            free(filename);
+        }
         
         memcpy(fbp, backbuff, var_screen_info.yres_virtual * fix_screen_info.line_length);
 
-        cur_y = (cur_y + 1) % (var_screen_info.yres - 20);
-        usleep(1000);
+        cur_y = (cur_y + 4) % (var_screen_info.yres - 20);
+        usleep(10);
     }
 
 	return 0;

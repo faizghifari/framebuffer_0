@@ -14,18 +14,18 @@ for c in list('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789? '
     font = ImageFont.truetype(filename, 24)
     draw.text((0,0), c, font=font, fill="black")
     
-    pic = img.load()
-    upper_bound = (40, 40)
-    lower_bound = (0, 0)
-    for x in range(40):
-        for y in range(40):
-            r,g,b,a = pic[x,y]
-            color = (r + g + b) / 3.0
-            if color <= 200:
-                upper_bound = min(upper_bound[0], x), min(upper_bound[1], y)
-                lower_bound = max(lower_bound[0], x), max(lower_bound[1], y)
+    # pic = img.load()
+    # upper_bound = (40, 40)
+    # lower_bound = (0, 0)
+    # for x in range(40):
+    #     for y in range(40):
+    #         r,g,b,a = pic[x,y]
+    #         color = (r + g + b) / 3.0
+    #         if color <= 200:
+    #             upper_bound = min(upper_bound[0], x), min(upper_bound[1], y)
+    #             lower_bound = max(lower_bound[0], x), max(lower_bound[1], y)
 
-    img = img.crop((upper_bound[0], upper_bound[1], lower_bound[0], lower_bound[1]))
+    # img = img.crop((upper_bound[0], upper_bound[1], lower_bound[0], lower_bound[1]))
     img = img.resize((20, 20), Image.ANTIALIAS)
     pic = img.load()
 

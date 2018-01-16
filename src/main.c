@@ -40,12 +40,20 @@ int main() {
     long screensize = var_screen_info.yres_virtual * fix_screen_info.line_length;
     fbp = mmap(0, screensize, PROT_READ | PROT_WRITE, MAP_SHARED, fb_fd, (off_t) 0);
 
-    int x,y;
-    for (x = 0; x < var_screen_info.xres; x++)
-        for (y = 0; y < var_screen_info.yres; y++) {
-            put_pixel_color(fbp, x, y, 0xff, 0, 0xff, &var_screen_info, &fix_screen_info);
-		}
-    usleep(1000000);
+    int cur_y = 0;
+    while (1) {
+        // clear screen
+        int x,y;
+        for (x = 0; x < var_screen_info.xres; x++)
+            for (y = 0; y < var_screen_info.yres; y++)
+                put_pixel_color(fbp, x, y, 0x0, 0, 0x0, &var_screen_info, &fix_screen_info);
+        
+        for (x = var_screen_info.xres/8*3; x < var_screen_info.xres/8*5; x++)
+            put_pixel_color(fbp, x, cur_y, 0xff, 0xff, 0xff, &var_screen_info, &fix_screen_info);
+        
+        cur_y = (cur_y + 1) % var_screen_info.yres;
+        usleep(10000);
+    }
 
 	return 0;
 }

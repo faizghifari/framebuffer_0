@@ -8,12 +8,15 @@
 #include <unistd.h>
 #include <string.h>
 
-const char* title_text = "Hello World";
+#define MAX_NAME_SZ 256
+// const char* title_text = "Hello World";
+struct fb_var_screeninfo var_screen_info;
+struct fb_fix_screeninfo fix_screen_info;
 
 uint32_t pixel_color(uint8_t r, uint8_t g, uint8_t b, struct fb_var_screeninfo *vinfo);
 void put_pixel_color(uint8_t* mem, int x, int y, uint8_t r, uint8_t g, uint8_t b, struct fb_var_screeninfo *vinfo, struct fb_fix_screeninfo *finfo);
 void put_image_color(char* file, uint8_t* mem, int x, int y, uint8_t r, uint8_t g, uint8_t b, struct fb_var_screeninfo *vinfo, struct fb_fix_screeninfo *finfo);
-void clear_screen();
+void clear_screen(uint8_t *backbuff);
 
 void init_framebuffer_setting(int* fb_fd, struct fb_fix_screeninfo* fix_screen_info,
                               struct fb_var_screeninfo* var_screen_info) {
@@ -37,8 +40,6 @@ void init_framebuffer_setting(int* fb_fd, struct fb_fix_screeninfo* fix_screen_i
 }
 
 int main() {
-    struct fb_var_screeninfo var_screen_info;
-    struct fb_fix_screeninfo fix_screen_info;
     int fb_fd;
     uint8_t *fbp, *backbuff;
 
@@ -48,9 +49,16 @@ int main() {
     backbuff = (uint8_t*) malloc(var_screen_info.yres_virtual * fix_screen_info.line_length);
 
     int cur_y = 0;
+
+    // input
+    char title_text[MAX_NAME_SZ];
+    printf("Enter your name : \n");
+    fgets(title_text, MAX_NAME_SZ, stdin);
+    if ((strlen(title_text) > 0) && (title_text[strlen (title_text) - 1] == '\n'))
+        title_text[strlen (title_text) - 1] = '\0';
     while (1) {
         // clear screen
-        clear_screen();
+        clear_screen(backbuff);
         
         // for (x = var_screen_info.xres/8*3; x < var_screen_info.xres/8*5; x++)
         //     put_pixel_color(backbuff, x, cur_y, 0xff, 0xff, 0xff, &var_screen_info, &fix_screen_info);
@@ -66,7 +74,7 @@ int main() {
         memcpy(fbp, backbuff, var_screen_info.yres_virtual * fix_screen_info.line_length);
 
         cur_y = (cur_y + 4) % (var_screen_info.yres - 20);
-        usleep(10);
+        usleep(1);
     }
 
 	return 0;
@@ -96,7 +104,7 @@ void put_image_color(char* file, uint8_t* mem, int x, int y, uint8_t r, uint8_t 
     fclose(fd);
 }
 
-void clear_screen(){
+void clear_screen(uint8_t *backbuff){
     int x, y;
     for (x = 0; x < var_screen_info.xres; x++)
         for (y = 0; y < var_screen_info.yres; y++)

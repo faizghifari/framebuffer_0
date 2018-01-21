@@ -13,6 +13,7 @@ const char* title_text = "Hello World";
 uint32_t pixel_color(uint8_t r, uint8_t g, uint8_t b, struct fb_var_screeninfo *vinfo);
 void put_pixel_color(uint8_t* mem, int x, int y, uint8_t r, uint8_t g, uint8_t b, struct fb_var_screeninfo *vinfo, struct fb_fix_screeninfo *finfo);
 void put_image_color(char* file, uint8_t* mem, int x, int y, uint8_t r, uint8_t g, uint8_t b, struct fb_var_screeninfo *vinfo, struct fb_fix_screeninfo *finfo);
+void clear_screen();
 
 void init_framebuffer_setting(int* fb_fd, struct fb_fix_screeninfo* fix_screen_info,
                               struct fb_var_screeninfo* var_screen_info) {
@@ -49,10 +50,7 @@ int main() {
     int cur_y = 0;
     while (1) {
         // clear screen
-        int x,y;
-        for (x = 0; x < var_screen_info.xres; x++)
-            for (y = 0; y < var_screen_info.yres; y++)
-                put_pixel_color(backbuff, x, y, 0x0, 0, 0x0, &var_screen_info, &fix_screen_info);
+        clear_screen();
         
         // for (x = var_screen_info.xres/8*3; x < var_screen_info.xres/8*5; x++)
         //     put_pixel_color(backbuff, x, cur_y, 0xff, 0xff, 0xff, &var_screen_info, &fix_screen_info);
@@ -96,4 +94,11 @@ void put_image_color(char* file, uint8_t* mem, int x, int y, uint8_t r, uint8_t 
     }
     free(s);
     fclose(fd);
+}
+
+void clear_screen(){
+    int x, y;
+    for (x = 0; x < var_screen_info.xres; x++)
+        for (y = 0; y < var_screen_info.yres; y++)
+            put_pixel_color(backbuff, x, y, 0x0, 0, 0x0, &var_screen_info, &fix_screen_info);
 }

@@ -8,15 +8,16 @@
 #include <unistd.h>
 #include <string.h>
 
-#define MAX_NAME_SZ 256
+#define MAX_TXT_SZ 256
+#define UP -4
+#define DOWN 4
 // const char* title_text = "Hello World";
-struct fb_var_screeninfo var_screen_info;
-struct fb_fix_screeninfo fix_screen_info;
 
 uint32_t pixel_color(uint8_t r, uint8_t g, uint8_t b, struct fb_var_screeninfo *vinfo);
 void put_pixel_color(uint8_t* mem, int x, int y, uint8_t r, uint8_t g, uint8_t b, struct fb_var_screeninfo *vinfo, struct fb_fix_screeninfo *finfo);
 void put_image_color(char* file, uint8_t* mem, int x, int y, uint8_t r, uint8_t g, uint8_t b, struct fb_var_screeninfo *vinfo, struct fb_fix_screeninfo *finfo);
-void clear_screen(uint8_t *backbuff);
+void clear_screen(struct fb_fix_screeninfo* fix_screen_info, struct fb_var_screeninfo* var_screen_info, uint8_t *backbuff);
+void animate_text(char* title_text, int* cur_y, int opt, struct fb_fix_screeninfo* fix_screen_info, struct fb_var_screeninfo* var_screen_info, uint8_t *backbuff, uint8_t *fbp);
 
 void init_framebuffer_setting(int* fb_fd, struct fb_fix_screeninfo* fix_screen_info,
                               struct fb_var_screeninfo* var_screen_info) {
@@ -40,6 +41,8 @@ void init_framebuffer_setting(int* fb_fd, struct fb_fix_screeninfo* fix_screen_i
 }
 
 int main() {
+    struct fb_var_screeninfo var_screen_info;
+    struct fb_fix_screeninfo fix_screen_info;
     int fb_fd;
     uint8_t *fbp, *backbuff;
 
@@ -49,31 +52,26 @@ int main() {
     backbuff = (uint8_t*) malloc(var_screen_info.yres_virtual * fix_screen_info.line_length);
 
     int cur_y = 0;
+    int opt = DOWN;
+    char c_opt;
 
     // input
-    char title_text[MAX_NAME_SZ];
-    printf("Enter your name : \n");
-    fgets(title_text, MAX_NAME_SZ, stdin);
+    char title_text[MAX_TXT_SZ];
+    printf("Enter text : ");
+    fgets(title_text, MAX_TXT_SZ, stdin);
+    printf("up/down? (u/D) : ");
+    scanf("%c", &c_opt);
+    if(c_opt == 'u' || c_opt == 'U') { opt = UP; }
     if ((strlen(title_text) > 0) && (title_text[strlen (title_text) - 1] == '\n'))
         title_text[strlen (title_text) - 1] = '\0';
     while (1) {
         // clear screen
-        clear_screen(backbuff);
+        clear_screen(&fix_screen_info, &var_screen_info, backbuff);
         
         // for (x = var_screen_info.xres/8*3; x < var_screen_info.xres/8*5; x++)
         //     put_pixel_color(backbuff, x, cur_y, 0xff, 0xff, 0xff, &var_screen_info, &fix_screen_info);
 
-        int i;
-        for (i = 0; i < strlen(title_text); i++) {
-            char* filename = (char*) malloc(256);
-            sprintf(filename, "data/%c.txt", title_text[i]);
-            put_image_color(filename, backbuff, 10+22*i, cur_y, 0xff, 0xff, 0xff, &var_screen_info, &fix_screen_info);
-            free(filename);
-        }
-        
-        memcpy(fbp, backbuff, var_screen_info.yres_virtual * fix_screen_info.line_length);
-
-        cur_y = (cur_y + 4) % (var_screen_info.yres - 20);
+        animate_text(title_text, &cur_y, opt, &fix_screen_info, &var_screen_info, backbuff, fbp);
         usleep(1);
     }
 
@@ -104,9 +102,28 @@ void put_image_color(char* file, uint8_t* mem, int x, int y, uint8_t r, uint8_t 
     fclose(fd);
 }
 
-void clear_screen(uint8_t *backbuff){
+void clear_screen(struct fb_fix_screeninfo* fix_screen_info, struct fb_var_screeninfo* var_screen_info, uint8_t *backbuff){
     int x, y;
-    for (x = 0; x < var_screen_info.xres; x++)
-        for (y = 0; y < var_screen_info.yres; y++)
-            put_pixel_color(backbuff, x, y, 0x0, 0, 0x0, &var_screen_info, &fix_screen_info);
+    for (x = 0; x < var_screen_info->xres; x++)
+        for (y = 0; y < var_screen_info->yres; y++)
+            put_pixel_color(backbuff, x, y, 0x0, 0, 0x0, var_screen_info, fix_screen_info);
+}
+
+void animate_text(char* title_text, int* cur_y, int opt, struct fb_fix_screeninfo* fix_screen_info, struct fb_var_screeninfo* var_screen_info, uint8_t *backbuff, uint8_t *fbp){
+    int i;
+    for (i = 0; i < strlen(title_text); i++) {
+        char* filename = (char*) malloc(256);
+        sprintf(filename, "data/%c.txt", title_text[i]);
+        put_image_color(filename, backbuff, 10+22*i, *cur_y, 0xff, 0xff, 0xff, var_screen_info, fix_screen_info);
+        free(filename);
+    }
+    
+    memcpy(fbp, backbuff, var_screen_info->yres_virtual * fix_screen_info->line_length);
+
+
+    if(opt == UP){
+        *cur_y += var_screen_info->yres - 20;
+    }
+
+    *cur_y = (*cur_y + opt) % (var_screen_info->yres - 20);
 }

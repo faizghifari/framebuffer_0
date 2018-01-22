@@ -76,7 +76,7 @@ int main() {
         usleep(1);
     }
 
-	return 0;
+    return 0;
 }
 
 uint32_t pixel_color(uint8_t r, uint8_t g, uint8_t b, struct fb_var_screeninfo *vinfo) {
@@ -113,10 +113,11 @@ void clear_screen(struct fb_fix_screeninfo* fix_screen_info, struct fb_var_scree
 
 void animate_text(char* title_text, int* cur_y, int opt, struct fb_fix_screeninfo* fix_screen_info, struct fb_var_screeninfo* var_screen_info, uint8_t *backbuff, uint8_t *fbp){
     int i;
+    long mid = (var_screen_info->xres - (strlen(title_text) * char_width)) / 2;
     for (i = 0; i < strlen(title_text); i++) {
         char* filename = (char*) malloc(256);
         sprintf(filename, "data/%c.txt", title_text[i]);
-        put_image_color(filename, backbuff, 10+(char_width+2)*i, *cur_y, 0xff, 0xff, 0xff, var_screen_info, fix_screen_info);
+        put_image_color(filename, backbuff, mid+(char_width+2)*i, *cur_y, 0xff, 0xff, 0xff, var_screen_info, fix_screen_info);
         free(filename);
     }
     

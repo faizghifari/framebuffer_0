@@ -43,6 +43,7 @@ int main() {
         animate_text(&scr, title_text, &cur_y, opt);
         usleep(1);
     }
+    free_screen(&scr);
 
     return 0;
 }

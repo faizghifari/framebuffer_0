@@ -53,6 +53,12 @@ void get_screen_height(screen* scr, unsigned int* height) {
 void put_pixel(screen* scr, unsigned int x, unsigned int y, unsigned int pixel) {
     if (scr == NULL)
         return;
+    int width, height;
+    get_screen_height(scr, &height);
+    get_screen_width(scr, &width);
+    if (x >= width || y >= height)
+        return;
+        
     long mem_loc = (x + scr->vinfo.xoffset) * (scr->vinfo.bits_per_pixel/8);
     mem_loc += (y + scr->vinfo.yoffset) * scr->finfo.line_length;
     *((unsigned int*) (scr->bb_ptr + mem_loc)) = pixel;

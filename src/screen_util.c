@@ -14,7 +14,7 @@ void draw_image(screen* scr, int x, int y, int initial_color, image img) {
         if (cmd.type == COMMAND_TYPE_PUT_PIXEL)
             put_pixel(scr, x + cmd.x1, y + cmd.y1, initial_color);
         else if (cmd.type == COMMAND_TYPE_LINE_TO) {
-            draw_line(scr, cursor_x, cursor_y, x + cmd.x1, y + cmd.y1);
+            draw_line(scr, cursor_x, cursor_y, x + cmd.x1, y + cmd.y1, 0xffffff);
             cursor_x = x + cmd.x1;
             cursor_y = y + cmd.y1;
         } else if (cmd.type == COMMAND_TYPE_MOVE_TO) {
@@ -24,7 +24,7 @@ void draw_image(screen* scr, int x, int y, int initial_color, image img) {
     }
 }
 
-void __draw_line_x(screen* scr, int x1, int y1, int x2, int y2) {
+void __draw_line_x(screen* scr, int x1, int y1, int x2, int y2, int color) {
     if (x1 > x2) {
         int t = x1;
         x1 = x2; 
@@ -39,16 +39,16 @@ void __draw_line_x(screen* scr, int x1, int y1, int x2, int y2) {
     int e = 0;
     for (;x1 <= x2; x1++) {
         if (e <= 0) {
-            put_pixel(scr, x1, y1, 0xffffff);
+            put_pixel(scr, x1, y1, color);
             e = e + 2*dy;
         } else {
-            put_pixel(scr, x1, inc ? ++y1 : --y1, 0xffffff);
+            put_pixel(scr, x1, inc ? ++y1 : --y1, color);
             e = e + 2*dy - 2*dx;
         }
     }
 }
 
-void __draw_line_y(screen* scr, int x1, int y1, int x2, int y2) {
+void __draw_line_y(screen* scr, int x1, int y1, int x2, int y2, int color) {
     if (y1 > y2) {
         int t = y1;
         y1 = y2; 
@@ -63,18 +63,18 @@ void __draw_line_y(screen* scr, int x1, int y1, int x2, int y2) {
     int e = 0;
     for (;y1 <= y2; y1++) {
         if (e <= 0) {
-            put_pixel(scr, x1, y1, 0xffffff);
+            put_pixel(scr, x1, y1, color);
             e = e + 2*dx;
         } else {
-            put_pixel(scr, inc ? ++x1 : --x1, y1, 0xffffff);
+            put_pixel(scr, inc ? ++x1 : --x1, y1, color);
             e = e + 2*dx - 2*dy;
         }
     }
 }
 
-void draw_line(screen* scr, int x1, int y1, int x2, int y2) {
+void draw_line(screen* scr, int x1, int y1, int x2, int y2, int color) {
     if (abs(x2 - x1) > abs(y2 - y1))
-        __draw_line_x(scr, x1, y1, x2, y2);
+        __draw_line_x(scr, x1, y1, x2, y2, color);
     else
-        __draw_line_y(scr, x1, y1, x2, y2);
+        __draw_line_y(scr, x1, y1, x2, y2, color);
 }

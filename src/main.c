@@ -95,7 +95,7 @@ int main(int argc, char** argv) {
         // render the bullet
         for (i = 0; i < n_bullet; i++) {
             bullet b = p_bullet[i];
-            draw_line(&scr, b.x, b.y, b.x + b.dx * BULLET_LENGTH, b.y + b.dy * BULLET_LENGTH);
+            draw_line(&scr, b.x, b.y, b.x + b.dx * BULLET_LENGTH, b.y + b.dy * BULLET_LENGTH, 0xffff00);
         }
         // render planes
         for (i = 0; i < n_plane; i++)
@@ -114,7 +114,7 @@ int main(int argc, char** argv) {
                 x1 = x0 + _x * p_collision[i].time;
                 y1 = y0 + _y * p_collision[i].time;
 
-                draw_line(&scr, x0, y0, x1, y1);
+                draw_line(&scr, x0, y0, x1, y1, 0xff0000);
             }
         }
 

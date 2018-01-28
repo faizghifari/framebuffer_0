@@ -175,11 +175,17 @@ int main(int argc, char** argv) {
 
         // detect collision
         int j;
-        for (i = 0; i < n_bullet; i++)
+        for (i = 0; i < n_bullet; i++) {
+            removed = 0;
             for (j = 0; j < n_plane; j++)
                 if (p_bullet[i].x >= p_plane[j].x && p_bullet[i].x <= p_plane[j].x + 60 &&
-                    p_bullet[i].y > p_plane[j].y && p_bullet[i].y < p_plane[j].y + 30)
+                    p_bullet[i].y > p_plane[j].y && p_bullet[i].y < p_plane[j].y + 30) {
                     add_collision(p_plane[j].x + 30, p_plane[j].y + 15);
+                    removed++;
+                } else
+                    p_plane[j - removed] = p_plane[j];
+            n_plane -= removed;
+        }
     }
 
     free_screen(&scr);

@@ -18,16 +18,27 @@ const int MAX_BULLET = 20;
 const float BULLET_VELOCITY = 10.0;
 const float BULLET_LENGTH = 5.0;
 
+const int MAX_PLANE = 5;
+const float PLANCE_VELOCITY = 5.0;
+
 typedef struct {
     float x, y, dx, dy;
 } bullet;
+
+typedef struct {
+    float x, y, dx;
+} plane;
 
 void clear_screen(screen* scr);
 
 int add_bullet_by_vector(int x, int y, float dx, float dy);
 
+int add_plane_by_vector(int x, int y, int dx);
+
 int n_bullet;
+int n_plane;
 bullet* p_bullet;
+plane* p_plane;
 
 int main(int argc, char** argv) {
     if (argc < 2) {
@@ -43,18 +54,19 @@ int main(int argc, char** argv) {
     get_screen_width(&scr, &width);
     
     n_bullet = 0;
-    p_bullet = (bullet*) malloc(MAX_BULLET * sizeof(bullet));
+    n_plane = 0;
 
-    add_bullet_by_vector(0, 100, 1, 0);
+    p_bullet = (bullet*) malloc(MAX_BULLET * sizeof(bullet));
+    p_plane = (plane*) malloc(MAX_PLANE * sizeof(plane));
+
+    image plane_img;
+    load_image_from_file("data/pesawat.txt", &plane_img);
 
     int top = 0;
     while (1) {
         clear_screen(&scr);
 
-        image img;
-        load_image_from_file("data/pesawat.txt", &img);
-        draw_image(&scr, 10, 10, 0xffffff, img);
-
+        // render message
         int i;
         int msg_n = strlen(message);
         for (i = 0; i < msg_n; i++) {
@@ -72,21 +84,36 @@ int main(int argc, char** argv) {
             bullet b = p_bullet[i];
             draw_line(&scr, b.x, b.y, b.x + b.dx * BULLET_VELOCITY, b.y + b.dy * BULLET_LENGTH);
         }
+        // render planes
+        for (i = 0; i < n_bullet; i++)
+            draw_image(&scr, p_plane[i].x, p_plane[i].y, 0xffffff, plane_img);
 
+        // add random bullet
         if (rand() % 100 < 30)
             add_bullet_by_vector(rand() % width,
                                  rand() % height,
                                  rand() % (2*width) - width,
                                  rand() % (2*height) - height);
 
+        // add random plane
+        if (rand() % 100 < 30)
+            add_plane_by_vector(width, rand() % height, -1);
+
         flush_screen(&scr);
-        usleep(1);
+        usleep(10);
+
+        // move message
         top = (top + 3) % height;
+
         // move the bullet
         for (i = 0; i < n_bullet; i++) {
             p_bullet[i].x += p_bullet[i].dx * BULLET_VELOCITY;
             p_bullet[i].y += p_bullet[i].dy * BULLET_VELOCITY;
         }
+        // move the plane
+        for (i = 0; i < n_plane; i++)
+            p_plane[i].x += p_plane[i].dx * PLANCE_VELOCITY;
+
         // remove bullet
         int removed = 0;
         for (i = 0; i < n_bullet; i++)
@@ -95,6 +122,15 @@ int main(int argc, char** argv) {
             else
                 p_bullet[i - removed] = p_bullet[i];
         n_bullet -= removed;
+
+        // remove plane
+        removed = 0;
+        for (i = 0; i < n_plane; i++)
+            if (p_plane[i].x < 0 || p_plane[i].x > width)
+                removed++;
+            else
+                p_plane[i - removed] = p_plane[i];
+        n_plane -= removed;
     }
 
     free_screen(&scr);
@@ -127,6 +163,21 @@ int add_bullet_by_vector(int x, int y, float dx, float dy) {
 
         p_bullet[n_bullet++] = b;
         return n_bullet - 1;
+    }
+    return -1;
+}
+
+int add_plane_by_vector(int x, int y, int dx) {
+    float mag = dx > 0 ? 1 : -1;
+
+    if (n_plane < MAX_PLANE) {
+        plane p;
+        p.x = x;
+        p.y = y;
+        p.dx = dx;
+
+        p_plane[n_plane++] = p;
+        return n_plane - 1;
     }
     return -1;
 }

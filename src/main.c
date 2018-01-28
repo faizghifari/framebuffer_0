@@ -24,25 +24,10 @@ typedef struct {
 
 void clear_screen(screen* scr);
 
+int add_bullet_by_vector(int x, int y, float dx, float dy);
+
 int n_bullet;
 bullet* p_bullet;
-int add_bullet_by_vector(int x, int y, float dx, float dy) {
-    float mag = sqrt(dx*dx + dy*dy);
-    dx /= mag;
-    dy /= mag;
-
-    if (n_bullet < MAX_BULLET) {
-        bullet b;
-        b.x = x;
-        b.y = y;
-        b.dx = dx;
-        b.dy = dy;
-
-        p_bullet[n_bullet++] = b;
-        return n_bullet - 1;
-    }
-    return -1;
-}
 
 int main(int argc, char** argv) {
     if (argc < 2) {
@@ -88,6 +73,12 @@ int main(int argc, char** argv) {
             draw_line(&scr, b.x, b.y, b.x + b.dx * BULLET_VELOCITY, b.y + b.dy * BULLET_LENGTH);
         }
 
+        if (rand() % 100 < 30)
+            add_bullet_by_vector(rand() % width,
+                                 rand() % height,
+                                 rand() % (2*width) - width,
+                                 rand() % (2*height) - height);
+
         flush_screen(&scr);
         usleep(1);
         top = (top + 3) % height;
@@ -120,4 +111,22 @@ void clear_screen(screen* scr){
     for (x = 0; x < width; x++)
         for (y = 0; y < height; y++)
             put_pixel(scr, x, y, 0);
+}
+
+int add_bullet_by_vector(int x, int y, float dx, float dy) {
+    float mag = sqrt(dx*dx + dy*dy);
+    dx /= mag;
+    dy /= mag;
+
+    if (n_bullet < MAX_BULLET) {
+        bullet b;
+        b.x = x;
+        b.y = y;
+        b.dx = dx;
+        b.dy = dy;
+
+        p_bullet[n_bullet++] = b;
+        return n_bullet - 1;
+    }
+    return -1;
 }

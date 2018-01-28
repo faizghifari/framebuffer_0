@@ -16,6 +16,6 @@ typedef struct {
     command* p_cmd;
 } image;
 
-void load_image_from_file(char* filename, image* p_img);
+int load_image_from_file(char* filename, image* p_img);
 
 #endif

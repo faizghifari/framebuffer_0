@@ -9,12 +9,12 @@ const int COMMAND_TYPE_PUT_PIXEL = 0;
 const int COMMAND_TYPE_MOVE_TO = 1;
 const int COMMAND_TYPE_LINE_TO = 2;
 
-void load_image_from_file(char* filename, image* p_img) {
+int load_image_from_file(char* filename, image* p_img) {
     if (p_img == NULL)
-        return;
+        return -1;
     
     FILE* fd = fopen(filename, "r");
-    if (fd < 0) return;
+    if (fd < 0) return -1;
     char* s = (char*) malloc(256);
     
     command *commands = (command*) malloc(sizeof(command) * 500);
@@ -44,4 +44,6 @@ void load_image_from_file(char* filename, image* p_img) {
 
     fclose(fd);
     free(commands);
+
+    return n_cmd;
 }

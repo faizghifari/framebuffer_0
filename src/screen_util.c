@@ -5,6 +5,26 @@ unsigned int pixel_color(unsigned char r, unsigned char g, unsigned char b) {
     return (r<<16) | (g<<8) | b;
 }
 
+void draw_image(screen* scr, int x, int y, int initial_color, image img) {
+    int i;
+    int cursor_x = x;
+    int cursor_y = y;
+    for (i = 0; i < img.n_cmd; i++) {
+        command cmd = img.p_cmd[i];
+        switch (cmd.type) {
+            case COMMAND_TYPE_PUT_PIXEL:
+                put_pixel(scr, x + cmd.x1, y + cmd.y1, initial_color);
+                break;
+            case COMMAND_TYPE_LINE_TO:
+                draw_line(scr, cursor_x, cursor_y, x + cmd.x1, y + cmd.x2);
+            case COMMAND_TYPE_MOVE_TO:
+                cursor_x = x + cmd.x1;
+                cursor_y = y + cmd.y1;
+                break;   
+        }
+    }
+}
+
 void __draw_line_x(screen* scr, int x1, int y1, int x2, int y2) {
     if (x1 > x2) {
         int t = x1;

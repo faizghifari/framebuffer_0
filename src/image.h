@@ -1,9 +1,9 @@
-#ifndef IMAGE_H
-#define IMAGE_H
+#ifndef IMAGE_H_
+#define IMAGE_H_
 
-const int COMMAND_TYPE_PUT_PIXEL = 0;
-const int COMMAND_TYPE_MOVE_TO = 1;
-const int COMMAND_TYPE_LINE_TO = 2;
+const int COMMAND_TYPE_PUT_PIXEL;
+const int COMMAND_TYPE_MOVE_TO;
+const int COMMAND_TYPE_LINE_TO;
 
 typedef struct {
     int type;

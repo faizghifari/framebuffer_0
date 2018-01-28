@@ -2,7 +2,12 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
+
 #include "image.h"
+
+const int COMMAND_TYPE_PUT_PIXEL = 0;
+const int COMMAND_TYPE_MOVE_TO = 1;
+const int COMMAND_TYPE_LINE_TO = 2;
 
 void load_image_from_file(char* filename, image* p_img) {
     if (p_img == NULL)
@@ -23,10 +28,10 @@ void load_image_from_file(char* filename, image* p_img) {
             fscanf(fd, "%d %d", &cmd.x1, &cmd.y1);
         } else if (strcmp(s, "move_to") == 0) {
             cmd.type = COMMAND_TYPE_MOVE_TO;
-            fscanf(fd, "%d %d", &cmd.x1, &cmd.y1, &cmd.x2, &cmd.y2);
+            fscanf(fd, "%d %d", &cmd.x1, &cmd.y1);
         } else if (strcmp(s, "line_to") == 0) {
             cmd.type = COMMAND_TYPE_LINE_TO;
-            fscanf(fd, "%d %d", &cmd.x1, &cmd.y1, &cmd.x2, &cmd.y2);
+            fscanf(fd, "%d %d", &cmd.x1, &cmd.y1);
         }
 
         if (cmd.type > -1)

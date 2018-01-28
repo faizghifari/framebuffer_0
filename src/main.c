@@ -6,12 +6,43 @@
 #include <sys/mman.h>
 #include <sys/ioctl.h>
 #include <unistd.h>
+#include <math.h>
 #include <string.h>
+#include <termios.h>
+
 #include "screen.h"
 #include "image.h"
 #include "screen_util.h"
 
+const int MAX_BULLET = 20;
+const float BULLET_VELOCITY = 10.0;
+const float BULLET_LENGTH = 5.0;
+
+typedef struct {
+    float x, y, dx, dy;
+} bullet;
+
 void clear_screen(screen* scr);
+
+int n_bullet;
+bullet* p_bullet;
+int add_bullet_by_vector(int x, int y, float dx, float dy) {
+    float mag = sqrt(dx*dx + dy*dy);
+    dx /= mag;
+    dy /= mag;
+
+    if (n_bullet < MAX_BULLET) {
+        bullet b;
+        b.x = x;
+        b.y = y;
+        b.dx = dx;
+        b.dy = dy;
+
+        p_bullet[n_bullet++] = b;
+        return n_bullet - 1;
+    }
+    return -1;
+}
 
 int main(int argc, char** argv) {
     if (argc < 2) {
@@ -25,6 +56,11 @@ int main(int argc, char** argv) {
     int width, height;
     get_screen_height(&scr, &height);
     get_screen_width(&scr, &width);
+    
+    n_bullet = 0;
+    p_bullet = (bullet*) malloc(MAX_BULLET * sizeof(bullet));
+
+    add_bullet_by_vector(0, 100, 1, 0);
 
     int top = 0;
     while (1) {
@@ -46,30 +82,32 @@ int main(int argc, char** argv) {
                 draw_image(&scr, (width - msg_n * 20)/2 + 20*i, top, 0xffffff, img);
         }
 
+        // render the bullet
+        for (i = 0; i < n_bullet; i++) {
+            bullet b = p_bullet[i];
+            draw_line(&scr, b.x, b.y, b.x + b.dx * BULLET_VELOCITY, b.y + b.dy * BULLET_LENGTH);
+        }
+
         flush_screen(&scr);
         usleep(1);
         top = (top + 3) % height;
+        // move the bullet
+        for (i = 0; i < n_bullet; i++) {
+            p_bullet[i].x += p_bullet[i].dx * BULLET_VELOCITY;
+            p_bullet[i].y += p_bullet[i].dy * BULLET_VELOCITY;
+        }
+        // remove bullet
+        int removed = 0;
+        for (i = 0; i < n_bullet; i++)
+            if (p_bullet[i].x < 0 || p_bullet[i].x > width || p_bullet[i].y < 0 || p_bullet[i].y > height)
+                removed++;
+            else
+                p_bullet[i - removed] = p_bullet[i];
+        n_bullet -= removed;
     }
 
-    // while (1) {
-    //     draw_line(&scr, 100, 100, 800, 150); // top left -> bottom right
-    //     draw_line(&scr, 800, 160, 100, 110); // bottom right -> top left
-    //     draw_line(&scr, 900, 100, 1600, 50); // bottom left -> top right
-    //     draw_line(&scr, 1600, 60, 900, 110); // top right -> bottom left
-    //     draw_line(&scr, 400, 200, 1200, 200); // left -> right
-    //     draw_line(&scr, 1200, 210, 400, 210); // right -> left
-
-    //     draw_line(&scr, 100, 300, 200, 600); // top left -> bottom right
-    //     draw_line(&scr, 210, 600, 110, 300); // bottom right -> top left
-    //     draw_line(&scr, 300, 300, 200, 600); // top right -> bottom left
-    //     draw_line(&scr, 260, 600, 360, 300); // bottom left -> top right
-    //     draw_line(&scr, 270, 300, 270, 600); // top -> bottom
-    //     draw_line(&scr, 280, 600, 280, 300); // bottom -> top
-        
-    //     flush_screen(&scr);
-    //     usleep(1);
-    // }
     free_screen(&scr);
+    free(p_bullet);
 
     return 0;
 }

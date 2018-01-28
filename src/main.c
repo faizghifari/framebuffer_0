@@ -15,11 +15,11 @@
 #include "screen_util.h"
 
 const int MAX_BULLET = 20;
-const float BULLET_VELOCITY = 10.0;
+const float BULLET_VELOCITY = 50.0;
 const float BULLET_LENGTH = 5.0;
 
 const int MAX_PLANE = 5;
-const float PLANCE_VELOCITY = 5.0;
+const float PLANCE_VELOCITY = 25.0;
 
 typedef struct {
     float x, y, dx, dy;
@@ -82,22 +82,11 @@ int main(int argc, char** argv) {
         // render the bullet
         for (i = 0; i < n_bullet; i++) {
             bullet b = p_bullet[i];
-            draw_line(&scr, b.x, b.y, b.x + b.dx * BULLET_VELOCITY, b.y + b.dy * BULLET_LENGTH);
+            draw_line(&scr, b.x, b.y, b.x + b.dx * BULLET_LENGTH, b.y + b.dy * BULLET_LENGTH);
         }
         // render planes
-        for (i = 0; i < n_bullet; i++)
+        for (i = 0; i < n_plane; i++)
             draw_image(&scr, p_plane[i].x, p_plane[i].y, 0xffffff, plane_img);
-
-        // add random bullet
-        if (rand() % 100 < 30)
-            add_bullet_by_vector(rand() % width,
-                                 rand() % height,
-                                 rand() % (2*width) - width,
-                                 rand() % (2*height) - height);
-
-        // add random plane
-        if (rand() % 100 < 30)
-            add_plane_by_vector(width, rand() % height, -1);
 
         flush_screen(&scr);
         usleep(10);
@@ -131,6 +120,17 @@ int main(int argc, char** argv) {
             else
                 p_plane[i - removed] = p_plane[i];
         n_plane -= removed;
+
+        // add random bullet
+        if (rand() % 100 < 30)
+            add_bullet_by_vector(rand() % width,
+                                 rand() % height,
+                                 rand() % (2*width) - width,
+                                 rand() % (2*height) - height);
+
+        // add random plane
+        if (rand() % 100 < 30)
+            add_plane_by_vector(width, rand() % height, -1);
     }
 
     free_screen(&scr);

@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "image.h"
 
@@ -11,6 +12,9 @@ const int COMMAND_TYPE_LINE_TO = 2;
 
 int load_image_from_file(char* filename, image* p_img) {
     if (p_img == NULL)
+        return -1;
+
+    if (access(filename, F_OK) == -1)
         return -1;
     
     FILE* fd = fopen(filename, "r");

@@ -11,16 +11,15 @@ void draw_image(screen* scr, int x, int y, int initial_color, image img) {
     int cursor_y = y;
     for (i = 0; i < img.n_cmd; i++) {
         command cmd = img.p_cmd[i];
-        switch (cmd.type) {
-            case COMMAND_TYPE_PUT_PIXEL:
-                put_pixel(scr, x + cmd.x1, y + cmd.y1, initial_color);
-                break;
-            case COMMAND_TYPE_LINE_TO:
-                draw_line(scr, cursor_x, cursor_y, x + cmd.x1, y + cmd.x2);
-            case COMMAND_TYPE_MOVE_TO:
-                cursor_x = x + cmd.x1;
-                cursor_y = y + cmd.y1;
-                break;   
+        if (cmd.type == COMMAND_TYPE_PUT_PIXEL)
+            put_pixel(scr, x + cmd.x1, y + cmd.y1, initial_color);
+        else if (cmd.type == COMMAND_TYPE_LINE_TO) {
+            draw_line(scr, cursor_x, cursor_y, x + cmd.x1, y + cmd.x2);
+            cursor_x = x + cmd.x1;
+            cursor_y = y + cmd.y1;
+        } else if (cmd.type == COMMAND_TYPE_MOVE_TO) {
+            cursor_x = x + cmd.x1;
+            cursor_y = y + cmd.y1;
         }
     }
 }

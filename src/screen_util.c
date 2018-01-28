@@ -14,7 +14,7 @@ void draw_image(screen* scr, int x, int y, int initial_color, image img) {
         if (cmd.type == COMMAND_TYPE_PUT_PIXEL)
             put_pixel(scr, x + cmd.x1, y + cmd.y1, initial_color);
         else if (cmd.type == COMMAND_TYPE_LINE_TO) {
-            draw_line(scr, cursor_x, cursor_y, x + cmd.x1, y + cmd.x2);
+            draw_line(scr, cursor_x, cursor_y, x + cmd.x1, y + cmd.y1);
             cursor_x = x + cmd.x1;
             cursor_y = y + cmd.y1;
         } else if (cmd.type == COMMAND_TYPE_MOVE_TO) {

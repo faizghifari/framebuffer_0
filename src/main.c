@@ -30,6 +30,10 @@ int main(int argc, char** argv) {
     while (1) {
         clear_screen(&scr);
 
+        image img;
+        load_image_from_file("data/pesawat.txt", &img);
+        draw_image(&scr, 10, 10, 0xffffff, img);
+
         int i;
         int msg_n = strlen(message);
         for (i = 0; i < msg_n; i++) {

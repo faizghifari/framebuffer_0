@@ -18,7 +18,7 @@ const int MAX_BULLET = 50;
 const float BULLET_VELOCITY = 50.0;
 const float BULLET_LENGTH = 5.0;
 
-const int MAX_PLANE = 5;
+const int MAX_PLANE = 20;
 const float PLANCE_VELOCITY = 25.0;
 
 const int MAX_COLLISION_TIME = 10;
@@ -163,7 +163,7 @@ int main(int argc, char** argv) {
         n_collision -= removed;
 
         // add random bullet
-        if (rand() % 100 < 30)
+        if (rand() % 100 < 70)
             add_bullet_by_vector(rand() % width,
                                  rand() % height,
                                  rand() % (2*width) - width,

@@ -14,20 +14,27 @@
 #include "image.h"
 #include "screen_util.h"
 
-const int MAX_BULLET = 20;
+const int MAX_BULLET = 50;
 const float BULLET_VELOCITY = 50.0;
 const float BULLET_LENGTH = 5.0;
 
 const int MAX_PLANE = 5;
 const float PLANCE_VELOCITY = 25.0;
 
+const int MAX_COLLISION_TIME = 10;
+const int COLLISION_DETAIL = 9;
+
 typedef struct {
     float x, y, dx, dy;
 } bullet;
 
 typedef struct {
-    float x, y, dx;
+    int x, y, dx;
 } plane;
+
+typedef struct {
+    int x, y, time;
+} collision;
 
 void clear_screen(screen* scr);
 
@@ -35,10 +42,14 @@ int add_bullet_by_vector(int x, int y, float dx, float dy);
 
 int add_plane_by_vector(int x, int y, int dx);
 
+int add_collision(int x, int y);
+
 int n_bullet;
 int n_plane;
+int n_collision;
 bullet* p_bullet;
 plane* p_plane;
+collision* p_collision;
 
 int main(int argc, char** argv) {
     if (argc < 2) {
@@ -55,9 +66,11 @@ int main(int argc, char** argv) {
     
     n_bullet = 0;
     n_plane = 0;
+    n_collision = 0;
 
     p_bullet = (bullet*) malloc(MAX_BULLET * sizeof(bullet));
     p_plane = (plane*) malloc(MAX_PLANE * sizeof(plane));
+    p_collision = (collision*) malloc(MAX_PLANE * MAX_COLLISION_TIME * sizeof(collision));
 
     image plane_img;
     load_image_from_file("data/pesawat.txt", &plane_img);
@@ -87,6 +100,23 @@ int main(int argc, char** argv) {
         // render planes
         for (i = 0; i < n_plane; i++)
             draw_image(&scr, p_plane[i].x, p_plane[i].y, 0xffffff, plane_img);
+
+        // render collision
+        for (i = 0; i < n_collision; i++) {
+            float angle = 2.0 * acos(-1) / COLLISION_DETAIL;
+            for (int j = 0; j < COLLISION_DETAIL; j++) {
+                float _y = sin(angle * j);
+                float _x = cos(angle * j);
+                
+                float x0, y0, x1, y1;
+                x0 = p_collision[i].x + _x * p_collision[i].time * 2;
+                y0 = p_collision[i].y + _y * p_collision[i].time * 2;
+                x1 = x0 + _x * p_collision[i].time;
+                y1 = y0 + _y * p_collision[i].time;
+
+                draw_line(&scr, x0, y0, x1, y1);
+            }
+        }
 
         flush_screen(&scr);
         usleep(10);
@@ -121,6 +151,17 @@ int main(int argc, char** argv) {
                 p_plane[i - removed] = p_plane[i];
         n_plane -= removed;
 
+        // update collision
+        removed = 0;
+        for (i = 0; i < n_collision; i++)
+            if (p_collision[i].time > MAX_COLLISION_TIME)
+                removed++;
+            else {
+                p_collision[i].time++;
+                p_collision[i-removed] = p_collision[i];
+            }
+        n_collision -= removed;
+
         // add random bullet
         if (rand() % 100 < 30)
             add_bullet_by_vector(rand() % width,
@@ -131,6 +172,14 @@ int main(int argc, char** argv) {
         // add random plane
         if (rand() % 100 < 30)
             add_plane_by_vector(width, rand() % height, -1);
+
+        // detect collision
+        int j;
+        for (i = 0; i < n_bullet; i++)
+            for (j = 0; j < n_plane; j++)
+                if (p_bullet[i].x >= p_plane[j].x && p_bullet[i].x <= p_plane[j].x + 60 &&
+                    p_bullet[i].y > p_plane[j].y && p_bullet[i].y < p_plane[j].y + 30)
+                    add_collision(p_plane[j].x + 30, p_plane[j].y + 15);
     }
 
     free_screen(&scr);
@@ -180,4 +229,13 @@ int add_plane_by_vector(int x, int y, int dx) {
         return n_plane - 1;
     }
     return -1;
+}
+
+int add_collision(int x, int y) {
+    collision c;
+    c.x = x;
+    c.y = y;
+    c.time = 0;
+    p_collision[n_collision++] = c;
+    return n_collision - 1;
 }

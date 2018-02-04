@@ -54,22 +54,32 @@ void fill(screen* scr) {
     get_screen_height(scr, &height);
 
     for (int y = 0; y < height; y++) {
-        int last = 0; // 1 up, 2 down
+        int last_status = 0; // 1 up, 2 down
+        int prev_status = 0;
         char flag = 0;
         int last_pixel = 0;
         for (int x = 0; x < width; x++) {
-            int status = 0;
-            if (get_screen_pixel(scr, x-1, y+1) == 1 || get_screen_pixel(scr, x, y+1) == 1 || get_screen_pixel(scr, x+1, y+1) == 1)
-                status |= 2;
-            if (get_screen_pixel(scr, x-1, y-1) == 1 || get_screen_pixel(scr, x, y-1) == 1 || get_screen_pixel(scr, x+1, y-1) == 1)
-                status |= 1;
-
             int cur_pixel = get_screen_pixel(scr, x, y);
-            if (last_pixel == 1 && cur_pixel == 0 && (status == 3 || (status & last == 0 && status > 0)))
-                flag = !flag;
-            last_pixel = cur_pixel;
 
-            if (flag)
+            int status = 0;
+            if (cur_pixel == 1) {
+                if (get_screen_pixel(scr, x-1, y+1) == 1 || get_screen_pixel(scr, x, y+1) == 1 || get_screen_pixel(scr, x+1, y+1) == 1)
+                    status |= 2;
+                if (get_screen_pixel(scr, x-1, y-1) == 1 || get_screen_pixel(scr, x, y-1) == 1 || get_screen_pixel(scr, x+1, y-1) == 1)
+                    status |= 1;
+            }
+
+            if (last_pixel == 1 && cur_pixel == 0 && (prev_status | last_status) == 3) {
+                flag = 1-flag;
+                last_status = prev_status = 0;
+            }
+            
+            if (cur_pixel == 1 && last_pixel == 0)
+                last_status = status;
+            last_pixel = cur_pixel;
+            prev_status = status;
+
+            if (flag && cur_pixel == 0)
                 put_pixel(scr, x, y, 2);
         }
     }

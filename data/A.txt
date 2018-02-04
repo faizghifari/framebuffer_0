@@ -1,0 +1,13 @@
+move_to 7 0
+line_to 13 0
+line_to 20 30
+line_to 15 30
+line_to 13 20
+line_to 7 20
+line_to 5 30
+line_to 0 30
+line_to 7 0
+move_to 7 15
+line_to 10 5
+line_to 13 15
+line_to 7 15

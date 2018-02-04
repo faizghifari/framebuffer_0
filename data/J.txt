@@ -1,0 +1,11 @@
+move_to 20 0
+line_to 15 0
+line_to 15 20
+line_to 10 25
+line_to 5 20
+line_to 0 20
+line_to 0 25
+line_to 5 30
+line_to 15 30
+line_to 20 25
+line_to 20 0

@@ -12,6 +12,8 @@ typedef struct {
 
 void init_screen(screen* scr_out);
 
+screen create_screen(int width, int height);
+
 void get_screen_width(screen* scr, unsigned int* width);
 
 void get_screen_height(screen* scr, unsigned int* height);

@@ -30,6 +30,18 @@ void init_screen(screen* scr) {
     memcpy(scr, &sc, sizeof(sc));
 }
 
+screen create_screen(int width, int height) {
+    screen sc;
+    sc.vinfo.bits_per_pixel = sizeof(int) * 8;
+    sc.vinfo.yres = height;
+    sc.finfo.line_length = width * sizeof(int);
+    sc.vinfo.xoffset = 0;
+    sc.vinfo.yoffset = 0;
+    sc.bb_ptr = (char*) malloc(sizeof(int) * width * height);
+
+    return sc;
+}
+
 void get_screen_width(screen* scr, unsigned int* width) {
     if (width == NULL)
         return;

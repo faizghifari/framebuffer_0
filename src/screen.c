@@ -38,6 +38,7 @@ screen create_screen(int width, int height) {
     sc.vinfo.xoffset = 0;
     sc.vinfo.yoffset = 0;
     sc.bb_ptr = (char*) malloc(sizeof(int) * width * height);
+    memset(sc.bb_ptr, 0, sizeof(int) * width * height);
 
     return sc;
 }

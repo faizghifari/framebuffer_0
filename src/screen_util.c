@@ -9,17 +9,30 @@ void draw_image(screen* scr, int x, int y, int initial_color, image img) {
     int i;
     int cursor_x = x;
     int cursor_y = y;
+    int border_color = initial_color; 
+    int fill_color = 0xffffff;   
+    screen *tmp_screen = NULL;
     for (i = 0; i < img.n_cmd; i++) {
         command cmd = img.p_cmd[i];
         if (cmd.type == COMMAND_TYPE_PUT_PIXEL)
             put_pixel(scr, x + cmd.x1, y + cmd.y1, initial_color);
         else if (cmd.type == COMMAND_TYPE_LINE_TO) {
-            draw_line(scr, cursor_x, cursor_y, x + cmd.x1, y + cmd.y1, 0xffffff);
+            draw_line(scr, cursor_x, cursor_y, x + cmd.x1, y + cmd.y1, border_color);
+            draw_line(tmp_screen, cursor_x - x, cursor_y - y, cmd.x1, cmd.y1, 1);
             cursor_x = x + cmd.x1;
             cursor_y = y + cmd.y1;
         } else if (cmd.type == COMMAND_TYPE_MOVE_TO) {
             cursor_x = x + cmd.x1;
             cursor_y = y + cmd.y1;
+        } else if (cmd.type == COMMAND_COLOR) {
+            border_color = pixel_color(cmd.r, cmd.g, cmd.b);
+        } else if (cmd.type == COMMAND_START_FILL) {
+            fill_color = pixel_color(cmd.r, cmd.g, cmd.b);
+            tmp_screen = (screen*) malloc(sizeof(screen));
+            *tmp_screen = create_screen(100,100);
+        } else if (cmd.type == COMMAND_END_FILL) {
+            free_screen(tmp_screen);
+            tmp_screen = NULL;
         }
     }
 }
@@ -73,6 +86,8 @@ void __draw_line_y(screen* scr, int x1, int y1, int x2, int y2, int color) {
 }
 
 void draw_line(screen* scr, int x1, int y1, int x2, int y2, int color) {
+    if (scr == NULL)
+        return;
     if (abs(x2 - x1) > abs(y2 - y1))
         __draw_line_x(scr, x1, y1, x2, y2, color);
     else

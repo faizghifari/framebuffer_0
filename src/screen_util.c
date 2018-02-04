@@ -1,6 +1,8 @@
 #include "screen_util.h"
 #include <stdlib.h>
 
+void fill(screen* scr);
+
 unsigned int pixel_color(unsigned char r, unsigned char g, unsigned char b) {
     return (r<<16) | (g<<8) | b;
 }
@@ -11,6 +13,9 @@ void draw_image(screen* scr, int x, int y, int initial_color, image img) {
     int cursor_y = y;
     int border_color = initial_color; 
     int fill_color = 0xffffff;   
+    int width, height;
+    get_screen_width(scr, &width);
+    get_screen_height(scr, &height);
     screen *tmp_screen = NULL;
     for (i = 0; i < img.n_cmd; i++) {
         command cmd = img.p_cmd[i];
@@ -18,7 +23,7 @@ void draw_image(screen* scr, int x, int y, int initial_color, image img) {
             put_pixel(scr, x + cmd.x1, y + cmd.y1, initial_color);
         else if (cmd.type == COMMAND_TYPE_LINE_TO) {
             draw_line(scr, cursor_x, cursor_y, x + cmd.x1, y + cmd.y1, border_color);
-            draw_line(tmp_screen, cursor_x - x, cursor_y - y, cmd.x1, cmd.y1, 1);
+            draw_line(tmp_screen, cursor_x, cursor_y, x + cmd.x1, y + cmd.y1, 1);
             cursor_x = x + cmd.x1;
             cursor_y = y + cmd.y1;
         } else if (cmd.type == COMMAND_TYPE_MOVE_TO) {
@@ -29,10 +34,43 @@ void draw_image(screen* scr, int x, int y, int initial_color, image img) {
         } else if (cmd.type == COMMAND_START_FILL) {
             fill_color = pixel_color(cmd.r, cmd.g, cmd.b);
             tmp_screen = (screen*) malloc(sizeof(screen));
-            *tmp_screen = create_screen(100,100);
+            *tmp_screen = create_screen(width,height);
         } else if (cmd.type == COMMAND_END_FILL) {
+            fill(tmp_screen);
+            for (int y = 0; y < height; y++)
+                for (int x = 0; x < width; x++)
+                    if (get_screen_pixel(tmp_screen,x,y) == 2)
+                        put_pixel(scr, x, y, fill_color);
+
             free_screen(tmp_screen);
             tmp_screen = NULL;
+        }
+    }
+}
+
+void fill(screen* scr) {
+    int width, height;
+    get_screen_width(scr, &width);
+    get_screen_height(scr, &height);
+
+    for (int y = 0; y < height; y++) {
+        int last = 0; // 1 up, 2 down
+        char flag = 0;
+        int last_pixel = 0;
+        for (int x = 0; x < width; x++) {
+            int status = 0;
+            if (get_screen_pixel(scr, x-1, y+1) == 1 || get_screen_pixel(scr, x, y+1) == 1 || get_screen_pixel(scr, x+1, y+1) == 1)
+                status |= 2;
+            if (get_screen_pixel(scr, x-1, y-1) == 1 || get_screen_pixel(scr, x, y-1) == 1 || get_screen_pixel(scr, x+1, y-1) == 1)
+                status |= 1;
+
+            int cur_pixel = get_screen_pixel(scr, x, y);
+            if (last_pixel == 1 && cur_pixel == 0 && (status == 3 || (status & last == 0 && status > 0)))
+                flag = !flag;
+            last_pixel = cur_pixel;
+
+            if (flag)
+                put_pixel(scr, x, y, 2);
         }
     }
 }

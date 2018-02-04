@@ -1,5 +1,7 @@
+start_fill 255 82 17
 move_to 5 0
 line_to 15 0
 line_to 15 30
 line_to 5 30
 line_to 5 0
+end_fill

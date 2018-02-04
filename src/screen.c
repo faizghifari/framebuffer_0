@@ -34,6 +34,7 @@ screen create_screen(int width, int height) {
     screen sc;
     sc.vinfo.bits_per_pixel = sizeof(int) * 8;
     sc.vinfo.yres = height;
+    sc.vinfo.yres_virtual = height;
     sc.finfo.line_length = width * sizeof(int);
     sc.vinfo.xoffset = 0;
     sc.vinfo.yoffset = 0;
@@ -61,6 +62,20 @@ void get_screen_height(screen* scr, unsigned int* height) {
         return;
     }
     *height = scr->vinfo.yres_virtual;
+}
+
+int get_screen_pixel(screen* scr, unsigned int x, unsigned int y) {
+    if (scr == NULL)
+        return 0;
+    int width, height;
+    get_screen_height(scr, &height);
+    get_screen_width(scr, &width);
+    if (x >= width || y >= height || x < 0 || y < 0)
+        return 0;
+    
+    int mem_loc = (x + scr->vinfo.xoffset) * (scr->vinfo.bits_per_pixel/8);
+    mem_loc += (y + scr->vinfo.yoffset) * scr->finfo.line_length;
+    return *((unsigned int*) (scr->bb_ptr + mem_loc));
 }
 
 void put_pixel(screen* scr, unsigned int x, unsigned int y, unsigned int pixel) {

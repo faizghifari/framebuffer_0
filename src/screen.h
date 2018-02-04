@@ -18,6 +18,8 @@ void get_screen_width(screen* scr, unsigned int* width);
 
 void get_screen_height(screen* scr, unsigned int* height);
 
+int get_screen_pixel(screen* scr, unsigned int x, unsigned int y);
+
 void put_pixel(screen* scr, unsigned int x, unsigned int y, unsigned int pixel);
 
 void flush_screen(screen* scr);

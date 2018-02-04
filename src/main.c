@@ -78,6 +78,11 @@ int main(int argc, char** argv) {
     int top = 0;
     while (1) {
         clear_screen(&scr);
+        image i_image;
+        load_image_from_file("data/I.txt", &i_image);
+        draw_image(&scr, 10, 10, 0xffffff, i_image);
+        flush_screen(&scr);
+        continue;
 
         // render message
         int i;

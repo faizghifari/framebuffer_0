@@ -4,6 +4,9 @@
 const int COMMAND_TYPE_PUT_PIXEL;
 const int COMMAND_TYPE_MOVE_TO;
 const int COMMAND_TYPE_LINE_TO;
+const int COMMAND_COLOR;
+const int COMMAND_START_FILL;
+const int COMMAND_END_FILL;
 
 typedef struct {
     int type;

@@ -9,6 +9,9 @@
 const int COMMAND_TYPE_PUT_PIXEL = 0;
 const int COMMAND_TYPE_MOVE_TO = 1;
 const int COMMAND_TYPE_LINE_TO = 2;
+const int COMMAND_COLOR = 3;
+const int COMMAND_START_FILL = 4;
+const int COMMAND_END_FILL = 5;
 
 int load_image_from_file(char* filename, image* p_img) {
     if (p_img == NULL)
@@ -36,6 +39,14 @@ int load_image_from_file(char* filename, image* p_img) {
         } else if (strcmp(s, "line_to") == 0) {
             cmd.type = COMMAND_TYPE_LINE_TO;
             fscanf(fd, "%d %d", &cmd.x1, &cmd.y1);
+        } else if (strcmp(s, "color") == 0) {
+            cmd.type = COMMAND_COLOR;
+            fscanf(fd, "%d %d %d", &cmd.r, &cmd.g, &cmd.b);
+        } else if (strcmp(s, "start_fill") == 0) {
+            cmd.type = COMMAND_START_FILL;
+            fscanf(fd, "%d %d %d", &cmd.r, &cmd.g, &cmd.b);
+        } else if (strcmp(s, "end_fill") == 0) {
+            cmd.type = COMMAND_END_FILL;
         }
 
         if (cmd.type > -1)

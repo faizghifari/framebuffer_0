@@ -11,11 +11,15 @@ line_to 52 6
 line_to 60 6
 line_to 54 20
 line_to 36 20
-line_to 40 30
-line_to 32 30
-line_to 24 16
 line_to 34 16
-line_to 36 20
-move_to 26 20
+line_to 24 16
+line_to 26 20
 line_to 0 20
+end_fill
+start_fill 255 0 255
+move_to 24 16
+line_to 32 30
+line_to 40 30
+line_to 34 16
+line_to 24 16
 end_fill

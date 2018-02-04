@@ -69,15 +69,16 @@ void fill(screen* scr) {
                     status |= 1;
             }
 
-            if (last_pixel == 1 && cur_pixel == 0 && (prev_status | last_status) == 3) {
+            if (last_pixel == 1 && cur_pixel == 0 && (prev_status ^ last_status) == 3) {
                 flag = 1-flag;
                 last_status = prev_status = 0;
             }
             
             if (cur_pixel == 1 && last_pixel == 0)
                 last_status = status;
+            else
+                prev_status = status;
             last_pixel = cur_pixel;
-            prev_status = status;
 
             if (flag && cur_pixel == 0)
                 put_pixel(scr, x, y, 2);

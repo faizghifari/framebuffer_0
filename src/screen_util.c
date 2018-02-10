@@ -142,3 +142,22 @@ void draw_line(screen* scr, int x1, int y1, int x2, int y2, int color) {
     else
         __draw_line_y(scr, x1, y1, x2, y2, color);
 }
+
+void transform_image(image img, mat3 transformer) {
+    vec3 p = malloc_vec3(0,0,0,NULL);
+    vec3 res = malloc_vec3(0,0,0,NULL);
+    int i;
+    for (i = 0; i < img.n_cmd; i++) {
+        vec3_xy(img.p_cmd[i].x1, img.p_cmd[i].y1, p);
+        mul_mat3_vec3(transformer, p, res);
+        img.p_cmd[i].x1 = res[0];
+        img.p_cmd[i].y1 = res[1];
+
+        vec3_xy(img.p_cmd[i].x2, img.p_cmd[i].y2, p);
+        mul_mat3_vec3(transformer, p, res);
+        img.p_cmd[i].x2 = res[0];
+        img.p_cmd[i].y2 = res[1];
+    }
+    free(p);
+    free(res);
+}

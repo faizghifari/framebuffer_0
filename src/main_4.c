@@ -88,6 +88,8 @@ void draw_plane(screen* scr, int x, int y, double t) {
     draw_image(scr, 0, 0, 0xffffff, machine_right_img);
     
     free_image(&pesawat_img);
+    free_image(&machine_left_img);
+    free_image(&machine_right_img);
 }
 
 int main(int argc, char** argv) {

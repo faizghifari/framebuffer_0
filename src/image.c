@@ -62,3 +62,8 @@ int load_image_from_file(char* filename, image* p_img) {
 
     return n_cmd;
 }
+
+void free_image(image* p_img) {
+    if (p_img != NULL && p_img->n_cmd > 0)
+        free(p_img->p_cmd);
+}

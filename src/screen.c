@@ -13,7 +13,11 @@ void init_screen(screen* scr) {
         return;
     screen sc;
 
-    sc.fb_fd = open("/dev/fb0",O_RDWR);
+    char* filename = "/dev/fb1";
+    if(access(filename, F_OK) == -1)
+        filename = "/dev/fb0";
+
+    sc.fb_fd = open(filename,O_RDWR);
 
     ioctl(sc.fb_fd, FBIOGET_VSCREENINFO, sc.vinfo);
     sc.vinfo.grayscale=0;

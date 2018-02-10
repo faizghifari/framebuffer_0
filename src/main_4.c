@@ -14,8 +14,6 @@
 #include "image.h"
 #include "screen_util.h"
 
-void clear_screen(screen* scr);
-
 void draw_machine(screen* scr, int x, int y, int s, int t) {
     static const MACHINE_WIDTH = 20;
     static const MACHING_HEIGHT = 20;
@@ -53,21 +51,11 @@ int main(int argc, char** argv) {
         clear_screen(&scr);
         draw_machine(&scr, 10, 10, 1, time);
         flush_screen(&scr);
-        usleep(1);
+        usleep(50);
         time += 1;
     }
 
     free_screen(&scr);
 
     return 0;
-}
-
-void clear_screen(screen* scr){
-    int x, y, width, height;
-    get_screen_height(scr, &height);
-    get_screen_width(scr, &width);
-    
-    for (x = 0; x < width; x++)
-        for (y = 0; y < height; y++)
-            put_pixel(scr, x, y, 0);
 }

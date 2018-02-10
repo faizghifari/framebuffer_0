@@ -14,7 +14,6 @@
 #include "image.h"
 #include "screen_util.h"
 
-void clear_screen(screen* scr);
 void put_char_to_screen(screen* scr, char c, int x, int y);
 
 int main(int argc, char** argv) {
@@ -57,14 +56,4 @@ void put_char_to_screen(screen* scr, char c, int x, int y) {
     image i_image;
     load_image_from_file(fname, &i_image);
     draw_image(scr, x, y, 0xffffff, i_image);
-}
-
-void clear_screen(screen* scr) {
-    int x, y, width, height;
-    get_screen_height(scr, &height);
-    get_screen_width(scr, &width);
-    
-    for (x = 0; x < width; x++)
-        for (y = 0; y < height; y++)
-            put_pixel(scr, x, y, 0);
 }

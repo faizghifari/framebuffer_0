@@ -36,8 +36,6 @@ typedef struct {
     int x, y, time;
 } collision;
 
-void clear_screen(screen* scr);
-
 int add_bullet_by_vector(int x, int y, float dx, float dy);
 
 int add_plane_by_vector(int x, int y, int dx);
@@ -197,16 +195,6 @@ int main(int argc, char** argv) {
     free(p_bullet);
 
     return 0;
-}
-
-void clear_screen(screen* scr){
-    int x, y, width, height;
-    get_screen_height(scr, &height);
-    get_screen_width(scr, &width);
-    
-    for (x = 0; x < width; x++)
-        for (y = 0; y < height; y++)
-            put_pixel(scr, x, y, 0);
 }
 
 int add_bullet_by_vector(int x, int y, float dx, float dy) {

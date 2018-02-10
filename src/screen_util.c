@@ -3,6 +3,16 @@
 
 void fill(screen* scr);
 
+void clear_screen(screen* scr) {
+    int x, y, width, height;
+    get_screen_height(scr, &height);
+    get_screen_width(scr, &width);
+    
+    for (x = 0; x < width; x++)
+        for (y = 0; y < height; y++)
+            put_pixel(scr, x, y, 0);
+}
+
 unsigned int pixel_color(unsigned char r, unsigned char g, unsigned char b) {
     return (r<<16) | (g<<8) | b;
 }

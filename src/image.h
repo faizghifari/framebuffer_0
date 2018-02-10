@@ -21,6 +21,8 @@ typedef struct {
 
 int load_image_from_file(char* filename, image* p_img);
 
+int copy_image(image src, image* dst);
+
 void free_image(image* p_img);
 
 #endif

@@ -100,7 +100,7 @@ int main(int argc, char** argv) {
     int time = 1;
     while (1) {
         clear_screen(&scr);
-        draw_plane(&scr, width / 2, height / 2, time);
+        draw_plane(&scr, width / 2 + time*cos(sqrt(time)), height / 2 + time*sin(sqrt(time)), time);
         flush_screen(&scr);
         usleep(5000);
         time += 1;

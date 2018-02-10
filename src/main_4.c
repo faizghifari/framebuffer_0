@@ -15,28 +15,44 @@
 #include "screen_util.h"
 
 void draw_machine(screen* scr, int x, int y, int s, int t) {
-    static const MACHINE_WIDTH = 20;
-    static const MACHING_HEIGHT = 20;
+    static const int MACHINE_WIDTH = 20;
+    static const int MACHINE_HEIGHT = 20;
+
+    static mat3 translate_first = NULL;
+    static mat3 transformer_matrix = NULL;
+    static mat3 translate_again = NULL;
+    static mat3 mat_ab = NULL;
+    static mat3 result_matrix = NULL;
+
+    if (translate_first == NULL)
+        translate_first = malloc_mat3(0,0,0,0,0,0,0,0,0,NULL);
+    if (transformer_matrix == NULL)
+        transformer_matrix = malloc_mat3(0,0,0,0,0,0,0,0,0,NULL);
+    if (translate_again == NULL)
+        translate_again = malloc_mat3(0,0,0,0,0,0,0,0,0,NULL);
+    if (mat_ab == NULL)
+        mat_ab = malloc_mat3(0,0,0,0,0,0,0,0,0,NULL);
+    if (result_matrix == NULL)
+        result_matrix = malloc_mat3(0,0,0,0,0,0,0,0,0,NULL);
 
     image img;
     load_image_from_file("data/baling-baling.txt", &img);
     
-    mat3 translate_first = mat3_translate(-10, -10, NULL);
-    mat3 transformer_matrix = mat3_rotate(t, NULL);
-    mat3 translate_again = mat3_translate(10,10,NULL);
-    mat3 mat_ab = mul_mat3(translate_again, transformer_matrix, NULL);
-    mat3 result_matrix = mul_mat3(mat_ab, translate_first, NULL);
+    mat3_translate(-MACHINE_WIDTH / 2.0, - MACHINE_HEIGHT / 2.0, translate_first);
+    mat3_rotate(t, transformer_matrix);
+    mat3_translate(MACHINE_WIDTH / 2.0, MACHINE_HEIGHT / 2.0, translate_again);
+    mul_mat3(translate_again, transformer_matrix, mat_ab);
+    mul_mat3(mat_ab, translate_first, result_matrix);
     
     transform_image(img, result_matrix);
     
     draw_image(scr, x, y, 0xffffff, img);
     
-    free(translate_first);
-    free(transformer_matrix);
-    free(translate_again);
-    free(mat_ab);
-    free(result_matrix);
     free_image(&img);
+}
+
+void draw_plane(screen* scr, int x, int y, int s, int t) {
+
 }
 
 int main(int argc, char** argv) {

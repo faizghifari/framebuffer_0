@@ -170,7 +170,13 @@ void draw_parachute(screen* scr, int x, int y, double s) {
     transform_image(img_parachute, __);
 
     draw_image(scr, 0, 0, 0xffffff, img_parachute);
-    // draw_line(scr, x, y, x, y + 10, 0xffffff);
+
+    free(transform_first);
+    free(scale_then);
+    free(transform_again);
+    free(_);
+    free(__);
+    free_image(&img_parachute);
 }
 
 void draw_tire(screen* scr, int x, int y, double s){

@@ -8,7 +8,7 @@ typedef struct {
     float x, y, dx, dy, t;
 } bullet;
 
-bullet add_bullet(float x, float y, float dx, float dy, float gravity);
+bullet add_bullet(float x, float y, float dx, float dy, float velocity, float gravity);
 
 void move_bullet (bullet* b, float velocity);
 

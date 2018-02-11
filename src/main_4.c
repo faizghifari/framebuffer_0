@@ -17,11 +17,11 @@
 
 const int MAX_PLANE = 5;
 const int PLANE_DURATION = 500;
-const double GRAVITY = 0.01;
-const float PARACHUTE_INIT_VELOCITY = 1;
+const double GRAVITY = 0.25;
+const float PARACHUTE_INIT_VELOCITY = 5;
 const float BULLET_VELOCITY = 10;
-const float BULLET_LENGTH = 10;
-const int MAX_BULLET = 20;
+const float BULLET_LENGTH = 20;
+const int MAX_BULLET = 40;
 const int EXPLOSION_DURATION = 50;
 const float EXPLOSION_VELOCITY = 0.5;
 
@@ -268,7 +268,12 @@ int main(int argc, char** argv) {
         // draw_tire(&scr, 50, 50);
 
         if ((rand() % 100 < 70) && (n_bullet < MAX_BULLET)){
-            bullets_array[n_bullet] = add_bullet(width/2, height, rand() % (2*width) - width, rand() % (2*height) - height, GRAVITY);
+            bullets_array[n_bullet] = add_bullet(width/2, 
+                                                 height,
+                                                 rand() % (2*width) - width,
+                                                 rand() % (2*height) - height,
+                                                 7,
+                                                 GRAVITY);
             n_bullet += 1;
         }
 

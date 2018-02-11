@@ -14,6 +14,22 @@
 #include "image.h"
 #include "screen_util.h"
 
+const int MAX_PLANE = 5;
+const int PLANE_DURATION = 500;
+const double GRAVITY = 0.5;
+
+typedef struct {
+    double x, y, t;
+} plane_t;
+
+typedef struct {
+    double x, y, t;
+} explosion_t;
+
+typedef struct  {
+    double x, y, v;
+} parachute_t;
+
 void draw_plane(screen* scr, int x, int y, double t) {
     static const int PLANE_WIDTH = 40;
     static const int PLANE_HEIGHT = 8;
@@ -97,7 +113,6 @@ void draw_tire(screen* scr, int x, int y){
     if (tire_template_img.n_cmd == 0)
         load_image_from_file("data/tire.txt", &tire_template_img);
 
-
     image tire_img;
     tire_img.n_cmd = 0;
 
@@ -107,6 +122,102 @@ void draw_tire(screen* scr, int x, int y){
     free_image(&tire_img);
 }
 
+void draw_explosion(screen* scr, int x, int y, double t) {
+    static const int collision_detail = 7;
+    float angle = 2.0 * acos(-1) / collision_detail;
+    for (int j = 0; j < collision_detail; j++) {
+        float _y = sin(angle * j);
+        float _x = cos(angle * j);
+        
+        float x0, y0, x1, y1;
+        x0 = x + _x * t * 2;
+        y0 = y + _y * t * 2;
+        x1 = x0 + _x * t;
+        y1 = y0 + _y * t;
+
+        draw_line(scr, x0, y0, x1, y1, 0xff0000);
+    }
+}
+
+void draw_parachute(screen* scr, int x, int y) {
+    image img_parachute;
+    load_image_from_file("data/parasut.txt", &img_parachute);
+
+    mat3 transform_first = mat3_translate(-5, -8, NULL);
+    mat3 scale_then = mat3_scale(5, 5, NULL);
+    mat3 transform_again = mat3_translate(5 + x, 8 + y, NULL);
+    mat3 _ = mul_mat3(transform_again, scale_then, NULL);
+    mat3 __ = mul_mat3(_, transform_first, NULL);
+    transform_image(img_parachute, __);
+
+    draw_image(scr, 0, 0, 0xffffff, img_parachute);
+    // draw_line(scr, x, y, x, y + 10, 0xffffff);
+}
+
+void update_plane(screen* scr, int* n_plane, plane_t* plane_arr) {
+    // get screen width and height
+    int width, height;
+    get_screen_height(scr, &height);
+    get_screen_width(scr, &width);
+
+    // update time
+    for (int i = 0; i < *n_plane; i++)
+        plane_arr[i].t++;
+
+    // delete unused plane
+    int delete_num = 0;
+    for (int i = 0; i < *n_plane; i++)
+        if (plane_arr[i].t > PLANE_DURATION)
+            delete_num++;
+        else
+            plane_arr[i - delete_num] = plane_arr[i];
+    *n_plane -= delete_num;
+
+    // add random plane
+    if (rand() % 100 < 30)
+        while (*n_plane < MAX_PLANE) {
+            plane_arr[*n_plane].x = rand() % width;
+            plane_arr[*n_plane].y = rand() % height;
+            plane_arr[*n_plane].t = 0;
+            (*n_plane)++;
+        }
+}
+
+void update_explosion(int *n_explosion, explosion_t* explosion_arr) {
+    for (int i = 0; i < *n_explosion; i++)
+        explosion_arr[i].t++;
+    
+    // delete unused plane
+    int delete_num = 0;
+    for (int i = 0; i < *n_explosion; i++)
+        if (explosion_arr[i].t > 15)
+            delete_num++;
+        else
+            explosion_arr[i - delete_num] = explosion_arr[i];
+    *n_explosion -= delete_num;
+}
+
+void update_parachute(screen *scr, int *n_parachute, parachute_t* parachute_arr) {
+    // get screen width and height
+    int width, height;
+    get_screen_height(scr, &height);
+    get_screen_width(scr, &width);
+
+    for (int i = 0; i < *n_parachute; i++) {
+        parachute_arr[i].v -= GRAVITY;
+        parachute_arr[i].y -= parachute_arr[i].v;
+    }
+    
+    // delete unused parachute
+    int delete_num = 0;
+    for (int i = 0; i < *n_parachute; i++)
+        if (parachute_arr[i].y > height)
+            delete_num++;
+        else
+            parachute_arr[i - delete_num] = parachute_arr[i];
+    *n_parachute -= delete_num;
+}
+
 int main(int argc, char** argv) {
     screen scr;
     init_screen(&scr);
@@ -114,17 +225,38 @@ int main(int argc, char** argv) {
     get_screen_height(&scr, &height);
     get_screen_width(&scr, &width);
 
-    int time = 1;
+    plane_t* plane_arr = (plane_t*) malloc(MAX_PLANE * sizeof(plane_t));
+    int n_plane = 0;
+    
+    explosion_t* explosion_arr = (explosion_t*) malloc(MAX_PLANE * 5 * sizeof(explosion_t));
+    int n_explosion = 0;
+
+    parachute_t* parachute_arr = (parachute_t*) malloc(MAX_PLANE * 5 * sizeof(parachute_t));
+    int n_parachute = 0;
+    
     while (1) {
         clear_screen(&scr);
         // draw_plane(&scr, width / 2 + time*cos(sqrt(time)), height / 2 + time*sin(sqrt(time)), time);
         draw_tire(&scr, 50, 50);
+
+        int i;
+        for (i = 0; i < n_plane; i++)
+            draw_plane(&scr, plane_arr[i].x, plane_arr[i].y, plane_arr[i].t);
+        for (i = 0; i < n_explosion; i++)
+            draw_explosion(&scr, explosion_arr[i].x, explosion_arr[i].y, explosion_arr[i].t);
+        for (i = 0; i < n_parachute; i++)
+            draw_parachute(&scr, parachute_arr[i].x, parachute_arr[i].y);
+        update_plane(&scr, &n_plane, plane_arr);
+        update_explosion(&n_explosion, explosion_arr);
+        update_parachute(&scr, &n_parachute, parachute_arr);
+        
         flush_screen(&scr);
         usleep(5000);
-        time += 1;
     }
 
     free_screen(&scr);
+    free(plane_arr);
+    free(explosion_arr);
 
     return 0;
 }

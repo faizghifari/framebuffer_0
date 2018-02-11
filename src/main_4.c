@@ -44,13 +44,18 @@ void draw_plane(screen* scr, int x, int y, double t) {
     static const int MACHINE_WIDTH = 10;
     static const int MACHINE_HEIGHT = 10;
 
+    static const int TIRE_WIDTH = 2;
+    static const int TIRE_HEIGHT = 4;
+
     static mat3 translate_first = NULL;
     static mat3 rotate_then = NULL;
     static mat3 scale_then = NULL;
     static mat3 translate_again = NULL;
     static mat3 mat_ab = NULL;
     static mat3 result_matrix = NULL;
-    static image pesawat_template_img, machine_template_img;
+    static image pesawat_template_img;
+    static image machine_template_img;
+    static image tire_template_img;
 
     if (translate_first == NULL)
         translate_first = malloc_mat3(0,0,0,0,0,0,0,0,0,NULL);
@@ -69,6 +74,8 @@ void draw_plane(screen* scr, int x, int y, double t) {
         load_image_from_file("data/pesawat_body.txt", &pesawat_template_img);
     if (machine_template_img.n_cmd == 0)
         load_image_from_file("data/baling-baling.txt", &machine_template_img);
+    if (tire_template_img.n_cmd == 0)
+        load_image_from_file("data/tire.txt", &tire_template_img);
 
     /**
      * translate_again * scale * translate_first * pesawat
@@ -77,13 +84,16 @@ void draw_plane(screen* scr, int x, int y, double t) {
 
     double s = pow(t, 0.3);
 
-    image pesawat_img, machine_left_img, machine_right_img;
-    pesawat_img.n_cmd = machine_left_img.n_cmd = 0, machine_right_img.n_cmd = 0;
+    image pesawat_img, machine_left_img, machine_right_img, tire_left_img, tire_right_img;
+    pesawat_img.n_cmd = machine_left_img.n_cmd = 0, machine_right_img.n_cmd = tire_left_img.n_cmd = tire_right_img.n_cmd = 0;
 
     copy_image(pesawat_template_img, &pesawat_img);
     copy_image(machine_template_img, &machine_left_img);
     copy_image(machine_template_img, &machine_right_img);
+    copy_image(tire_template_img, &tire_left_img);
+    copy_image(tire_template_img, &tire_right_img);
 
+    // transform plane
     mat3_scale(s, s, scale_then);
     mat3_translate(x, y, translate_again);
     mul_mat3(translate_again, scale_then, mat_ab);
@@ -92,6 +102,7 @@ void draw_plane(screen* scr, int x, int y, double t) {
     mul_mat3(mat_ab, translate_first, result_matrix);
     transform_image(pesawat_img, result_matrix);
 
+    // transform machine
     mat3_rotate(t, rotate_then);
     mat3_translate(-MACHINE_WIDTH / 2.0, -MACHINE_HEIGHT / 2.0, translate_first);
     mul_mat3(rotate_then, translate_first, result_matrix);
@@ -106,9 +117,20 @@ void draw_plane(screen* scr, int x, int y, double t) {
     mul_mat3(translate_first, result_matrix, rotate_then);
     transform_image(machine_right_img, rotate_then);
 
+    // transform tire
+    mat3_translate(-TIRE_WIDTH / 2.0 - 5, -TIRE_HEIGHT / 2.0 + 5, translate_first);
+    mul_mat3(mat_ab, translate_first, result_matrix);
+    transform_image(tire_left_img, result_matrix);
+
+    mat3_translate(-TIRE_WIDTH / 2.0 + 5, -TIRE_HEIGHT / 2.0 + 5, translate_first);
+    mul_mat3(mat_ab, translate_first, result_matrix);
+    transform_image(tire_right_img, result_matrix);
+
     draw_image(scr, 0, 0, 0xffffff, pesawat_img);
     draw_image(scr, 0, 0, 0xffffff, machine_left_img);
     draw_image(scr, 0, 0, 0xffffff, machine_right_img);
+    draw_image(scr, 0, 0, 0xffffff, tire_left_img);
+    draw_image(scr, 0, 0, 0xffffff, tire_right_img);
     
     free_image(&pesawat_img);
     free_image(&machine_left_img);

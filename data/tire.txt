@@ -1,5 +1,5 @@
 move_to 0 0
-line_to 0 15
-line_to 8 15
-line_to 8 0
+line_to 0 4
+line_to 2 4
+line_to 2 0
 line_to 0 0

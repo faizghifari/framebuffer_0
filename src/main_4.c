@@ -37,6 +37,10 @@ typedef struct  {
     double x, y, v, s;
 } parachute_t;
 
+typedef struct {
+    double x, y, v, s;
+} tire_t;
+
 void draw_plane(screen* scr, int x, int y, double t) {
     static const int PLANE_WIDTH = 40;
     static const int PLANE_HEIGHT = 8;
@@ -137,20 +141,6 @@ void draw_plane(screen* scr, int x, int y, double t) {
     free_image(&machine_right_img);
 }
 
-void draw_tire(screen* scr, int x, int y){
-    static image tire_template_img;
-    if (tire_template_img.n_cmd == 0)
-        load_image_from_file("data/tire.txt", &tire_template_img);
-
-    image tire_img;
-    tire_img.n_cmd = 0;
-
-    copy_image(tire_template_img, &tire_img);
-
-    draw_image(scr, 0, 0, 0xffffff, tire_img);
-    free_image(&tire_img);
-}
-
 void draw_explosion(screen* scr, int x, int y, double t) {
     static const int collision_detail = 7;
     float angle = 2.0 * acos(-1) / collision_detail;
@@ -181,6 +171,41 @@ void draw_parachute(screen* scr, int x, int y, double s) {
 
     draw_image(scr, 0, 0, 0xffffff, img_parachute);
     // draw_line(scr, x, y, x, y + 10, 0xffffff);
+}
+
+void draw_tire(screen* scr, int x, int y, double s){
+    static image tire_template_img;
+    if (tire_template_img.n_cmd == 0)
+        load_image_from_file("data/tire.txt", &tire_template_img);
+
+    image tire_left_img, tire_right_img;
+    tire_left_img.n_cmd = tire_right_img.n_cmd = 0;
+
+    copy_image(tire_template_img, &tire_left_img);
+    copy_image(tire_template_img, &tire_right_img);
+
+    mat3 scale_then = mat3_scale(s, s, NULL);
+    mat3 transform_again = mat3_translate(1 + x, 2 + y, NULL);
+    mat3 _ = mul_mat3(transform_again, scale_then, NULL);
+
+    mat3 transform_first = mat3_translate(-1 - 5, -2, NULL);
+    mat3 __ = mul_mat3(_, transform_first, NULL);
+    transform_image(tire_left_img, __);
+
+    mat3_translate(-1 + 5, -2, transform_first);
+    __ = mul_mat3(_, transform_first, __);
+    transform_image(tire_right_img, __);
+
+    draw_image(scr, 0, 0, 0xffffff, tire_left_img);
+    draw_image(scr, 0, 0, 0xffffff, tire_right_img);
+
+    free_image(&tire_left_img);
+    free_image(&tire_right_img);
+    free(scale_then);
+    free(transform_again);
+    free(_);
+    free(__);
+    free(transform_first);
 }
 
 void update_plane(screen* scr, int* n_plane, plane_t* plane_arr) {
@@ -247,6 +272,31 @@ void update_parachute(screen *scr, int *n_parachute, parachute_t* parachute_arr)
     *n_parachute -= delete_num;
 }
 
+void update_tire(screen *scr, int *n_tire, tire_t* tire_arr) {
+    // get screen width and height
+    int width, height;
+    get_screen_height(scr, &height);
+    get_screen_width(scr, &width);
+
+    for (int i = 0; i < *n_tire; i++) {
+        tire_arr[i].v -= GRAVITY;
+        tire_arr[i].y -= tire_arr[i].v;
+        if (tire_arr[i].y > height) {
+            tire_arr[i].y = height - 2;
+            tire_arr[i].v = -(tire_arr[i].v / 2.0);
+        }
+    }
+    
+    // delete unused parachute
+    int delete_num = 0;
+    for (int i = 0; i < *n_tire; i++)
+        if (fabs(tire_arr[i].v) < 2 && tire_arr[i].y > height - 100)
+            delete_num++;
+        else
+            tire_arr[i - delete_num] = tire_arr[i];
+    *n_tire -= delete_num;
+}
+
 void add_explosion(int* n_explosion, explosion_t* explosion_arr, float x, float y) {
     explosion_arr[*n_explosion].x = x;
     explosion_arr[*n_explosion].y = y;
@@ -262,6 +312,15 @@ void add_parachute(int* n_parachute, parachute_t* parachute_arr, float x, float 
     parachute_arr[*n_parachute].s = pow(t, 0.3);
 
     (*n_parachute)++;
+}
+
+void add_tire(int *n_tire, tire_t* tire_arr, double x, double y, double s) {
+    tire_arr[*n_tire].x = x;
+    tire_arr[*n_tire].y = y;
+    tire_arr[*n_tire].v = 0;
+    tire_arr[*n_tire].s = s;
+
+    (*n_tire)++;
 }
 
 int main(int argc, char** argv) {
@@ -283,7 +342,8 @@ int main(int argc, char** argv) {
     parachute_t* parachute_arr = (parachute_t*) malloc(MAX_PLANE * 5 * sizeof(parachute_t));
     int n_parachute = 0;
 
-
+    tire_t* tire_arr = (tire_t*) malloc(MAX_PLANE * 5 * sizeof(tire_t));
+    int n_tire = 0;
     
     while (1) {
         clear_screen(&scr);
@@ -328,6 +388,7 @@ int main(int argc, char** argv) {
                     bullets_array[i].y > plane_arr[j].y - offset  && bullets_array[i].y < plane_arr[j].y + offset ) {
                     add_explosion(&n_explosion, explosion_arr, plane_arr[j].x, plane_arr[j].y);
                     add_parachute(&n_parachute, parachute_arr, plane_arr[j].x, plane_arr[j].y, plane_arr[j].t);
+                    add_tire(&n_tire, tire_arr, plane_arr[j].x, plane_arr[j].y, pow(plane_arr[j].t, 0.3));
                     removed++;
                 } else
                     plane_arr[j - removed] = plane_arr[j];
@@ -339,10 +400,13 @@ int main(int argc, char** argv) {
             draw_explosion(&scr, explosion_arr[i].x, explosion_arr[i].y, explosion_arr[i].t);
         for (i = 0; i < n_parachute; i++)
             draw_parachute(&scr, parachute_arr[i].x, parachute_arr[i].y, parachute_arr[i].s);
+        for (i = 0; i < n_tire; i++)
+            draw_tire(&scr, tire_arr[i].x, tire_arr[i].y, tire_arr[i].s);
 
         update_plane(&scr, &n_plane, plane_arr);
         update_explosion(&n_explosion, explosion_arr);
         update_parachute(&scr, &n_parachute, parachute_arr);
+        update_tire(&scr, &n_tire, tire_arr);
         
         flush_screen(&scr);
         usleep(5000);
@@ -352,6 +416,7 @@ int main(int argc, char** argv) {
     free(plane_arr);
     free(explosion_arr);
     free(parachute_arr);
+    free(tire_arr);
 
     return 0;
 }

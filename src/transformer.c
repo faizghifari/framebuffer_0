@@ -50,7 +50,14 @@ vec3 mul_mat3_vec3(mat3 a, vec3 b, vec3 res) {
 }
 
 vec3 vec3_xy(double x, double y, vec3 res) {
-    return malloc_vec3(x,y,1.00,res);
+    if (res == NULL)
+        return malloc_vec3(x,y,1.00,res);
+    else {
+        res[0] = x;
+        res[1] = y;
+        res[2] = 1.0;
+        return res;
+    }
 }
 
 mat3 mat3_i(mat3 res) {

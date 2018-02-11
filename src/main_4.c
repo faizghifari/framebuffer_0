@@ -23,10 +23,10 @@ typedef struct {
 
 void draw_plane(screen* scr, int x, int y, double t) {
     static const int PLANE_WIDTH = 40;
-    static const int PLANE_HEIGHT = 5;
+    static const int PLANE_HEIGHT = 8;
 
-    static const int MACHINE_WIDTH = 20;
-    static const int MACHINE_HEIGHT = 20;
+    static const int MACHINE_WIDTH = 10;
+    static const int MACHINE_HEIGHT = 10;
 
     static mat3 translate_first = NULL;
     static mat3 rotate_then = NULL;
@@ -80,12 +80,12 @@ void draw_plane(screen* scr, int x, int y, double t) {
     mat3_translate(-MACHINE_WIDTH / 2.0, -MACHINE_HEIGHT / 2.0, translate_first);
     mul_mat3(rotate_then, translate_first, result_matrix);
 
-    mat3_translate(-20, 0, translate_again);
+    mat3_translate(-10, 0, translate_again);
     mul_mat3(mat_ab, translate_again, translate_first);
     mul_mat3(translate_first, result_matrix, rotate_then);
     transform_image(machine_left_img, rotate_then);
 
-    mat3_translate(20, 0, translate_again);
+    mat3_translate(10, 0, translate_again);
     mul_mat3(mat_ab, translate_again, translate_first);
     mul_mat3(translate_first, result_matrix, rotate_then);
     transform_image(machine_right_img, rotate_then);

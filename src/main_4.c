@@ -17,7 +17,7 @@
 
 const int MAX_PLANE = 5;
 const int PLANE_DURATION = 500;
-const double GRAVITY = 0.25;
+const double GRAVITY = 0.4;
 const float PARACHUTE_INIT_VELOCITY = 5;
 const float BULLET_VELOCITY = 10;
 const float BULLET_LENGTH = 20;
@@ -34,7 +34,7 @@ typedef struct {
 } explosion_t;
 
 typedef struct  {
-    double x, y, v;
+    double x, y, v, s;
 } parachute_t;
 
 void draw_plane(screen* scr, int x, int y, double t) {
@@ -146,12 +146,12 @@ void draw_explosion(screen* scr, int x, int y, double t) {
     }
 }
 
-void draw_parachute(screen* scr, int x, int y) {
+void draw_parachute(screen* scr, int x, int y, double s) {
     image img_parachute;
     load_image_from_file("data/parasut.txt", &img_parachute);
 
     mat3 transform_first = mat3_translate(-5, -8, NULL);
-    mat3 scale_then = mat3_scale(5, 5, NULL);
+    mat3 scale_then = mat3_scale(s, s, NULL);
     mat3 transform_again = mat3_translate(5 + x, 8 + y, NULL);
     mat3 _ = mul_mat3(transform_again, scale_then, NULL);
     mat3 __ = mul_mat3(_, transform_first, NULL);
@@ -233,10 +233,11 @@ void add_explosion(int* n_explosion, explosion_t* explosion_arr, float x, float 
     (*n_explosion)++;
 }
 
-void add_parachute(int* n_parachute, parachute_t* parachute_arr, float x, float y){
+void add_parachute(int* n_parachute, parachute_t* parachute_arr, float x, float y, float t){
     parachute_arr[*n_parachute].x = x;
     parachute_arr[*n_parachute].y = y;
     parachute_arr[*n_parachute].v = PARACHUTE_INIT_VELOCITY;
+    parachute_arr[*n_parachute].s = pow(t, 0.3);
 
     (*n_parachute)++;
 }
@@ -271,8 +272,8 @@ int main(int argc, char** argv) {
             bullets_array[n_bullet] = add_bullet(width/2, 
                                                  height,
                                                  rand() % (2*width) - width,
-                                                 rand() % (2*height) - height,
-                                                 7,
+                                                 -height,
+                                                 8,
                                                  GRAVITY);
             n_bullet += 1;
         }
@@ -303,7 +304,7 @@ int main(int argc, char** argv) {
                 if (bullets_array[i].x >= plane_arr[j].x - 30  && bullets_array[i].x <= plane_arr[j].x + 30  &&
                     bullets_array[i].y > plane_arr[j].y - 30  && bullets_array[i].y < plane_arr[j].y + 30 ) {
                     add_explosion(&n_explosion, explosion_arr, plane_arr[j].x, plane_arr[j].y);
-                    add_parachute(&n_parachute, parachute_arr, plane_arr[j].x, plane_arr[j].y);
+                    add_parachute(&n_parachute, parachute_arr, plane_arr[j].x, plane_arr[j].y, plane_arr[j].t);
                     removed++;
                 } else
                     plane_arr[j - removed] = plane_arr[j];
@@ -313,7 +314,7 @@ int main(int argc, char** argv) {
         for (i = 0; i < n_explosion; i++)
             draw_explosion(&scr, explosion_arr[i].x, explosion_arr[i].y, explosion_arr[i].t);
         for (i = 0; i < n_parachute; i++)
-            draw_parachute(&scr, parachute_arr[i].x, parachute_arr[i].y);
+            draw_parachute(&scr, parachute_arr[i].x, parachute_arr[i].y, parachute_arr[i].s);
 
         update_plane(&scr, &n_plane, plane_arr);
         update_explosion(&n_explosion, explosion_arr);

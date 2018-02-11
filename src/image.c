@@ -63,8 +63,10 @@ int load_image_from_file(char* filename, image* p_img) {
     return n_cmd;
 }
 
-int copy_image(image src, image* dst) {
-    if (dst->n_cmd == 0)
+void copy_image(image src, image* dst) {
+    if (dst == NULL)
+        return;
+    if (dst->n_cmd == 0 || dst->p_cmd == NULL)
         dst->p_cmd = (command*) malloc(src.n_cmd * sizeof(command));
     dst->n_cmd = src.n_cmd;
     memcpy(dst->p_cmd, src.p_cmd, src.n_cmd * sizeof(command));

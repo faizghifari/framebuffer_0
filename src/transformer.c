@@ -54,17 +54,37 @@ vec3 vec3_xy(double x, double y, vec3 res) {
 }
 
 mat3 mat3_i(mat3 res) {
-    return malloc_mat3(1,0,0,0,1,0,0,0,1,res);
+    if (res == NULL)
+        res = malloc_mat3(1,0,0,0,1,0,0,0,1,res);
+    res[0] = 1; res[1] = 0; res[2] = 0;
+    res[3] = 0; res[4] = 1; res[5] = 0;
+    res[6] = 0; res[7] = 0; res[8] = 1;
+    return res;
 }
 
 mat3 mat3_translate(double x, double y, mat3 res) {
-    return malloc_mat3(1,0,x,0,1,y,0,0,1,res);
+    if (res == NULL)
+        res = malloc_mat3(1,0,0,0,1,0,0,0,1,res);
+    res[0] = 1; res[1] = 0; res[2] = x;
+    res[3] = 0; res[4] = 1; res[5] = y;
+    res[6] = 0; res[7] = 0; res[8] = 1;
+    return res;
 }
 
 mat3 mat3_scale(double x, double y, mat3 res) {
-    return malloc_mat3(x,0,0,0,y,0,0,0,1,res);
+    if (res == NULL)
+        res = malloc_mat3(1,0,0,0,1,0,0,0,1,res);
+    res[0] = x; res[1] = 0; res[2] = 0;
+    res[3] = 0; res[4] = y; res[5] = 0;
+    res[6] = 0; res[7] = 0; res[8] = 1;
+    return res;
 }
 
 mat3 mat3_rotate(double ang, mat3 res) {
-    return malloc_mat3(cos(ang),-sin(ang),0,sin(ang),cos(ang),0,0,0,1,res);
+    if (res == NULL)
+        res = malloc_mat3(1,0,0,0,1,0,0,0,1,res);
+    res[0] = cos(ang); res[1] = -sin(ang); res[2] = 0;
+    res[3] = sin(ang); res[4] = cos(ang); res[5] = 0;
+    res[6] = 0; res[7] = 0; res[8] = 1;
+    return res;
 }

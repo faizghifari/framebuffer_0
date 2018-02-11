@@ -21,6 +21,8 @@ const double GRAVITY = 0.01;
 const float BULLET_VELOCITY = 10;
 const float BULLET_LENGTH = 10;
 const int MAX_BULLET = 20;
+const int EXPLOSION_DURATION = 50;
+const float EXPLOSION_VELOCITY = 0.5;
 
 typedef struct {
     double x, y, t;
@@ -134,10 +136,10 @@ void draw_explosion(screen* scr, int x, int y, double t) {
         float _x = cos(angle * j);
         
         float x0, y0, x1, y1;
-        x0 = x + _x * t * 2;
-        y0 = y + _y * t * 2;
-        x1 = x0 + _x * t;
-        y1 = y0 + _y * t;
+        x0 = x + _x * t * 2 * EXPLOSION_VELOCITY;
+        y0 = y + _y * t * 2 * EXPLOSION_VELOCITY;
+        x1 = x0 + _x * t * EXPLOSION_VELOCITY;
+        y1 = y0 + _y * t * EXPLOSION_VELOCITY;
 
         draw_line(scr, x0, y0, x1, y1, 0xff0000);
     }
@@ -178,8 +180,8 @@ void update_plane(screen* scr, int* n_plane, plane_t* plane_arr) {
     *n_plane -= delete_num;
 
     // add random plane
-    if (rand() % 100 < 30)
-        while (*n_plane < MAX_PLANE) {
+    if (rand() % 100 < 5)
+        if (*n_plane < MAX_PLANE) {
             plane_arr[*n_plane].x = rand() % width;
             plane_arr[*n_plane].y = rand() % height;
             plane_arr[*n_plane].t = 0;
@@ -194,7 +196,7 @@ void update_explosion(int *n_explosion, explosion_t* explosion_arr) {
     // delete unused plane
     int delete_num = 0;
     for (int i = 0; i < *n_explosion; i++)
-        if (explosion_arr[i].t > 15)
+        if (explosion_arr[i].t > EXPLOSION_DURATION)
             delete_num++;
         else
             explosion_arr[i - delete_num] = explosion_arr[i];
@@ -220,6 +222,14 @@ void update_parachute(screen *scr, int *n_parachute, parachute_t* parachute_arr)
         else
             parachute_arr[i - delete_num] = parachute_arr[i];
     *n_parachute -= delete_num;
+}
+
+void add_explosion(int* n_explosion, explosion_t* explosion_arr, float x, float y) {
+    explosion_arr[*n_explosion].x = x;
+    explosion_arr[*n_explosion].y = y;
+    explosion_arr[*n_explosion].t = 0;
+
+    (*n_explosion)++;
 }
 
 int main(int argc, char** argv) {
@@ -259,6 +269,7 @@ int main(int argc, char** argv) {
             draw_bullet(&scr, bullets_array[i], BULLET_LENGTH);
         }
 
+        //delete out of bound bullet
         int removed = 0;
         for (i = 0; i < n_bullet; i++)
             if (bullets_array[i].x < 0 || bullets_array[i].x > width || bullets_array[i].y < 0 || bullets_array[i].y > height)
@@ -269,10 +280,26 @@ int main(int argc, char** argv) {
 
         for (i = 0; i < n_plane; i++)
             draw_plane(&scr, plane_arr[i].x, plane_arr[i].y, plane_arr[i].t);
-        for (i = 0; i < n_explosion; i++)
-            draw_explosion(&scr, explosion_arr[i].x, explosion_arr[i].y, explosion_arr[i].t);
         for (i = 0; i < n_parachute; i++)
             draw_parachute(&scr, parachute_arr[i].x, parachute_arr[i].y);
+
+        //detect collision
+        int j;
+        for (i = 0; i < n_bullet; i++) {
+            removed = 0;
+            for (j = 0; j < n_plane; j++)
+                if (bullets_array[i].x >= plane_arr[j].x - 30  && bullets_array[i].x <= plane_arr[j].x + 30  &&
+                    bullets_array[i].y > plane_arr[j].y - 30  && bullets_array[i].y < plane_arr[j].y + 30 ) {
+                    add_explosion(&n_explosion, explosion_arr, plane_arr[j].x, plane_arr[j].y);
+                    removed++;
+                } else
+                    plane_arr[j - removed] = plane_arr[j];
+            n_plane -= removed;
+        }
+
+        for (i = 0; i < n_explosion; i++)
+            draw_explosion(&scr, explosion_arr[i].x, explosion_arr[i].y, explosion_arr[i].t);
+
         update_plane(&scr, &n_plane, plane_arr);
         update_explosion(&n_explosion, explosion_arr);
         update_parachute(&scr, &n_parachute, parachute_arr);

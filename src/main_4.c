@@ -14,6 +14,13 @@
 #include "image.h"
 #include "screen_util.h"
 
+const int MAX_PLANE = 5;
+const int PLANE_DURATION = 30;
+
+typedef struct {
+    double x, y, t;
+} plane_t;
+
 void draw_plane(screen* scr, int x, int y, double t) {
     static const int PLANE_WIDTH = 40;
     static const int PLANE_HEIGHT = 5;
@@ -92,6 +99,34 @@ void draw_plane(screen* scr, int x, int y, double t) {
     free_image(&machine_right_img);
 }
 
+void update_plane(screen* scr, int* n_plane, plane_t* plane_arr) {
+    // get screen width and height
+    int width, height;
+    get_screen_height(scr, &height);
+    get_screen_width(scr, &width);
+
+    // update time
+    for (int i = 0; i < *n_plane; i++)
+        plane_arr[i].t++;
+
+    // delete unused plane
+    int delete_num = 0;
+    for (int i = 0; i < *n_plane; i++)
+        if (plane_arr[i].t > PLANE_DURATION)
+            delete_num++;
+        else
+            plane_arr[i - delete_num] = plane_arr[i];
+    *n_plane -= delete_num;
+
+    // add random plane
+    while (*n_plane < MAX_PLANE) {
+        plane_arr[*n_plane].x = rand() % width;
+        plane_arr[*n_plane].y = rand() % height;
+        plane_arr[*n_plane].t = 0;
+        (*n_plane)++;
+    }
+}
+
 int main(int argc, char** argv) {
     screen scr;
     init_screen(&scr);
@@ -99,16 +134,25 @@ int main(int argc, char** argv) {
     get_screen_height(&scr, &height);
     get_screen_width(&scr, &width);
 
+    plane_t* plane_arr = (plane_t*) malloc(MAX_PLANE * sizeof(plane_t));
+    int n_plane = 0;
+
     int time = 1;
     while (1) {
         clear_screen(&scr);
-        draw_plane(&scr, width / 2 + time*cos(sqrt(time)), height / 2 + time*sin(sqrt(time)), time);
+
+        int i;
+        for (i = 0; i < n_plane; i++)
+            draw_plane(&scr, plane_arr[i].x, plane_arr[i].y, plane_arr[i].t);
+        update_plane(&scr, &n_plane, plane_arr);
+        
         flush_screen(&scr);
         usleep(5000);
         time += 1;
     }
 
     free_screen(&scr);
+    free(plane_arr);
 
     return 0;
 }

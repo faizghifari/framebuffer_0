@@ -13,10 +13,14 @@
 #include "screen.h"
 #include "image.h"
 #include "screen_util.h"
+#include "bullet.h"
 
 const int MAX_PLANE = 5;
 const int PLANE_DURATION = 500;
-const double GRAVITY = 0.5;
+const double GRAVITY = 0.01;
+const float BULLET_VELOCITY = 10;
+const float BULLET_LENGTH = 10;
+const int MAX_BULLET = 20;
 
 typedef struct {
     double x, y, t;
@@ -225,6 +229,9 @@ int main(int argc, char** argv) {
     get_screen_height(&scr, &height);
     get_screen_width(&scr, &width);
 
+    bullet* bullets_array = (bullet*) malloc(MAX_BULLET * sizeof(bullet));
+    int n_bullet = 0;
+
     plane_t* plane_arr = (plane_t*) malloc(MAX_PLANE * sizeof(plane_t));
     int n_plane = 0;
     
@@ -233,13 +240,33 @@ int main(int argc, char** argv) {
 
     parachute_t* parachute_arr = (parachute_t*) malloc(MAX_PLANE * 5 * sizeof(parachute_t));
     int n_parachute = 0;
+
+
     
     while (1) {
         clear_screen(&scr);
         // draw_plane(&scr, width / 2 + time*cos(sqrt(time)), height / 2 + time*sin(sqrt(time)), time);
-        draw_tire(&scr, 50, 50);
+        // draw_tire(&scr, 50, 50);
+
+        if ((rand() % 100 < 70) && (n_bullet < MAX_BULLET)){
+            bullets_array[n_bullet] = add_bullet(width/2, height, rand() % (2*width) - width, rand() % (2*height) - height, GRAVITY);
+            n_bullet += 1;
+        }
 
         int i;
+        for (i = 0; i < n_bullet; i++){
+            move_bullet(&(bullets_array[i]), BULLET_VELOCITY);
+            draw_bullet(&scr, bullets_array[i], BULLET_LENGTH);
+        }
+
+        int removed = 0;
+        for (i = 0; i < n_bullet; i++)
+            if (bullets_array[i].x < 0 || bullets_array[i].x > width || bullets_array[i].y < 0 || bullets_array[i].y > height)
+                removed++;
+            else
+                bullets_array[i - removed] = bullets_array[i];
+        n_bullet -= removed;
+
         for (i = 0; i < n_plane; i++)
             draw_plane(&scr, plane_arr[i].x, plane_arr[i].y, plane_arr[i].t);
         for (i = 0; i < n_explosion; i++)

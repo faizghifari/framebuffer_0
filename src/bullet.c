@@ -1,6 +1,6 @@
 #include "bullet.h"
 
-bullet draw_bullet_from_vector(float x, float y, float dx, float dy, float gravity){
+bullet add_bullet(float x, float y, float dx, float dy, float gravity){
 	bullet b;
 
 	float mag = sqrt(dx*dx + dy*dy);
@@ -17,7 +17,7 @@ bullet draw_bullet_from_vector(float x, float y, float dx, float dy, float gravi
 }
 
 void move_bullet(bullet* b, float velocity) {
-	(*b).dy -= (*b).t;
+	(*b).dy += (*b).t;
 
 	(*b).x += (*b).dx * velocity;
 	(*b).y += (*b).dy * velocity;

@@ -92,6 +92,21 @@ void draw_plane(screen* scr, int x, int y, double t) {
     free_image(&machine_right_img);
 }
 
+void draw_tire(screen* scr, int x, int y){
+    static image tire_template_img;
+    if (tire_template_img.n_cmd == 0)
+        load_image_from_file("data/tire.txt", &tire_template_img);
+
+
+    image tire_img;
+    tire_img.n_cmd = 0;
+
+    copy_image(tire_template_img, &tire_img);
+
+    draw_image(scr, 0, 0, 0xffffff, tire_img);
+    free_image(&tire_img);
+}
+
 int main(int argc, char** argv) {
     screen scr;
     init_screen(&scr);
@@ -102,7 +117,8 @@ int main(int argc, char** argv) {
     int time = 1;
     while (1) {
         clear_screen(&scr);
-        draw_plane(&scr, width / 2 + time*cos(sqrt(time)), height / 2 + time*sin(sqrt(time)), time);
+        // draw_plane(&scr, width / 2 + time*cos(sqrt(time)), height / 2 + time*sin(sqrt(time)), time);
+        draw_tire(&scr, 50, 50);
         flush_screen(&scr);
         usleep(5000);
         time += 1;

@@ -15,7 +15,7 @@
 #include "screen_util.h"
 
 const int MAX_PLANE = 5;
-const int PLANE_DURATION = 30;
+const int PLANE_DURATION = 500;
 
 typedef struct {
     double x, y, t;
@@ -119,12 +119,13 @@ void update_plane(screen* scr, int* n_plane, plane_t* plane_arr) {
     *n_plane -= delete_num;
 
     // add random plane
-    while (*n_plane < MAX_PLANE) {
-        plane_arr[*n_plane].x = rand() % width;
-        plane_arr[*n_plane].y = rand() % height;
-        plane_arr[*n_plane].t = 0;
-        (*n_plane)++;
-    }
+    if (rand() % 100 < 30)
+        while (*n_plane < MAX_PLANE) {
+            plane_arr[*n_plane].x = rand() % width;
+            plane_arr[*n_plane].y = rand() % height;
+            plane_arr[*n_plane].t = 0;
+            (*n_plane)++;
+        }
 }
 
 int main(int argc, char** argv) {

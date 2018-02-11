@@ -21,6 +21,10 @@ typedef struct {
     double x, y, t;
 } plane_t;
 
+typedef struct {
+    double x, y, t;
+} explosion_t;
+
 void draw_plane(screen* scr, int x, int y, double t) {
     static const int PLANE_WIDTH = 40;
     static const int PLANE_HEIGHT = 8;
@@ -99,6 +103,23 @@ void draw_plane(screen* scr, int x, int y, double t) {
     free_image(&machine_right_img);
 }
 
+void draw_explosion(screen* scr, int x, int y, double t) {
+    static const int collision_detail = 7;
+    float angle = 2.0 * acos(-1) / collision_detail;
+    for (int j = 0; j < collision_detail; j++) {
+        float _y = sin(angle * j);
+        float _x = cos(angle * j);
+        
+        float x0, y0, x1, y1;
+        x0 = x + _x * t * 2;
+        y0 = y + _y * t * 2;
+        x1 = x0 + _x * t;
+        y1 = y0 + _y * t;
+
+        draw_line(scr, x0, y0, x1, y1, 0xff0000);
+    }
+}
+
 void update_plane(screen* scr, int* n_plane, plane_t* plane_arr) {
     // get screen width and height
     int width, height;
@@ -128,6 +149,20 @@ void update_plane(screen* scr, int* n_plane, plane_t* plane_arr) {
         }
 }
 
+void update_explosion(int *n_explosion, explosion_t* explosion_arr) {
+    for (int i = 0; i < *n_explosion; i++)
+        explosion_arr[i].t++;
+    
+    // delete unused plane
+    int delete_num = 0;
+    for (int i = 0; i < *n_explosion; i++)
+        if (explosion_arr[i].t > 15)
+            delete_num++;
+        else
+            explosion_arr[i - delete_num] = explosion_arr[i];
+    *n_explosion -= delete_num;
+}
+
 int main(int argc, char** argv) {
     screen scr;
     init_screen(&scr);
@@ -137,23 +172,28 @@ int main(int argc, char** argv) {
 
     plane_t* plane_arr = (plane_t*) malloc(MAX_PLANE * sizeof(plane_t));
     int n_plane = 0;
+    
+    explosion_t* explosion_arr = (explosion_t*) malloc(MAX_PLANE * 5 * sizeof(explosion_t));
+    int n_explosion = 0;
 
-    int time = 1;
     while (1) {
         clear_screen(&scr);
 
         int i;
         for (i = 0; i < n_plane; i++)
             draw_plane(&scr, plane_arr[i].x, plane_arr[i].y, plane_arr[i].t);
+        for (i = 0; i < n_explosion; i++)
+            draw_explosion(&scr, explosion_arr[i].x, explosion_arr[i].y, explosion_arr[i].t);
         update_plane(&scr, &n_plane, plane_arr);
+        update_explosion(&n_explosion, explosion_arr);
         
         flush_screen(&scr);
         usleep(5000);
-        time += 1;
     }
 
     free_screen(&scr);
     free(plane_arr);
+    free(explosion_arr);
 
     return 0;
 }

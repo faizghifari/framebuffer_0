@@ -16,6 +16,7 @@
 
 const int MAX_PLANE = 5;
 const int PLANE_DURATION = 500;
+const double GRAVITY = 0.5;
 
 typedef struct {
     double x, y, t;
@@ -125,7 +126,18 @@ void draw_explosion(screen* scr, int x, int y, double t) {
 }
 
 void draw_parachute(screen* scr, int x, int y) {
-    draw_line(scr, x, y, x, y + 10, 0xffffff);
+    image img_parachute;
+    load_image_from_file("data/parasut.txt", &img_parachute);
+
+    mat3 transform_first = mat3_translate(-5, -8, NULL);
+    mat3 scale_then = mat3_scale(5, 5, NULL);
+    mat3 transform_again = mat3_translate(5 + x, 8 + y, NULL);
+    mat3 _ = mul_mat3(transform_again, scale_then, NULL);
+    mat3 __ = mul_mat3(_, transform_first, NULL);
+    transform_image(img_parachute, __);
+
+    draw_image(scr, 0, 0, 0xffffff, img_parachute);
+    // draw_line(scr, x, y, x, y + 10, 0xffffff);
 }
 
 void update_plane(screen* scr, int* n_plane, plane_t* plane_arr) {
@@ -178,7 +190,7 @@ void update_parachute(screen *scr, int *n_parachute, parachute_t* parachute_arr)
     get_screen_width(scr, &width);
 
     for (int i = 0; i < *n_parachute; i++) {
-        parachute_arr[i].v -= 0.25;
+        parachute_arr[i].v -= GRAVITY;
         parachute_arr[i].y -= parachute_arr[i].v;
     }
     
@@ -207,7 +219,7 @@ int main(int argc, char** argv) {
 
     parachute_t* parachute_arr = (parachute_t*) malloc(MAX_PLANE * 5 * sizeof(parachute_t));
     int n_parachute = 0;
-
+    
     while (1) {
         clear_screen(&scr);
 

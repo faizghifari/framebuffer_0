@@ -300,14 +300,16 @@ int main(int argc, char** argv) {
         int j;
         for (i = 0; i < n_bullet; i++) {
             removed = 0;
-            for (j = 0; j < n_plane; j++)
-                if (bullets_array[i].x >= plane_arr[j].x - 30  && bullets_array[i].x <= plane_arr[j].x + 30  &&
-                    bullets_array[i].y > plane_arr[j].y - 30  && bullets_array[i].y < plane_arr[j].y + 30 ) {
+            for (j = 0; j < n_plane; j++) {
+                double offset = 20.0 * pow(plane_arr[j].t, 0.3);
+                if (bullets_array[i].x >= plane_arr[j].x - offset  && bullets_array[i].x <= plane_arr[j].x + offset  &&
+                    bullets_array[i].y > plane_arr[j].y - offset  && bullets_array[i].y < plane_arr[j].y + offset ) {
                     add_explosion(&n_explosion, explosion_arr, plane_arr[j].x, plane_arr[j].y);
                     add_parachute(&n_parachute, parachute_arr, plane_arr[j].x, plane_arr[j].y, plane_arr[j].t);
                     removed++;
                 } else
                     plane_arr[j - removed] = plane_arr[j];
+            }
             n_plane -= removed;
         }
 
@@ -327,6 +329,7 @@ int main(int argc, char** argv) {
     free_screen(&scr);
     free(plane_arr);
     free(explosion_arr);
+    free(parachute_arr);
 
     return 0;
 }

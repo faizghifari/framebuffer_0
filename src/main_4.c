@@ -18,6 +18,7 @@
 const int MAX_PLANE = 5;
 const int PLANE_DURATION = 500;
 const double GRAVITY = 0.01;
+const float PARACHUTE_INIT_VELOCITY = 1;
 const float BULLET_VELOCITY = 10;
 const float BULLET_LENGTH = 10;
 const int MAX_BULLET = 20;
@@ -232,6 +233,14 @@ void add_explosion(int* n_explosion, explosion_t* explosion_arr, float x, float 
     (*n_explosion)++;
 }
 
+void add_parachute(int* n_parachute, parachute_t* parachute_arr, float x, float y){
+    parachute_arr[*n_parachute].x = x;
+    parachute_arr[*n_parachute].y = y;
+    parachute_arr[*n_parachute].v = PARACHUTE_INIT_VELOCITY;
+
+    (*n_parachute)++;
+}
+
 int main(int argc, char** argv) {
     screen scr;
     init_screen(&scr);
@@ -280,8 +289,6 @@ int main(int argc, char** argv) {
 
         for (i = 0; i < n_plane; i++)
             draw_plane(&scr, plane_arr[i].x, plane_arr[i].y, plane_arr[i].t);
-        for (i = 0; i < n_parachute; i++)
-            draw_parachute(&scr, parachute_arr[i].x, parachute_arr[i].y);
 
         //detect collision
         int j;
@@ -291,6 +298,7 @@ int main(int argc, char** argv) {
                 if (bullets_array[i].x >= plane_arr[j].x - 30  && bullets_array[i].x <= plane_arr[j].x + 30  &&
                     bullets_array[i].y > plane_arr[j].y - 30  && bullets_array[i].y < plane_arr[j].y + 30 ) {
                     add_explosion(&n_explosion, explosion_arr, plane_arr[j].x, plane_arr[j].y);
+                    add_parachute(&n_parachute, parachute_arr, plane_arr[j].x, plane_arr[j].y);
                     removed++;
                 } else
                     plane_arr[j - removed] = plane_arr[j];
@@ -299,6 +307,8 @@ int main(int argc, char** argv) {
 
         for (i = 0; i < n_explosion; i++)
             draw_explosion(&scr, explosion_arr[i].x, explosion_arr[i].y, explosion_arr[i].t);
+        for (i = 0; i < n_parachute; i++)
+            draw_parachute(&scr, parachute_arr[i].x, parachute_arr[i].y);
 
         update_plane(&scr, &n_plane, plane_arr);
         update_explosion(&n_explosion, explosion_arr);
